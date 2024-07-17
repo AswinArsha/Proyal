@@ -98,7 +98,7 @@ const FoodManagement = () => {
               <Button onClick={() => {
                 setIsAddDialogOpen(true);
                 setIsEditDialogOpen(false);
-              }} className="bg-emerald-500 text-white rounded-md px-4 py-2">Add Food Item</Button>
+              }} className="bg-emerald-500 hover:bg-emerald-400 text-white rounded-md px-4 py-2">Add Food Item</Button>
             </DialogTrigger>
             <DialogContent className="p-6 rounded-lg shadow-lg">
               <DialogHeader>
@@ -122,12 +122,12 @@ const FoodManagement = () => {
               </div>
               <DialogFooter className="flex justify-end space-x-2 mt-4">
                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="rounded-md px-4 py-2">Cancel</Button>
-                <Button onClick={handleAddFood} className="bg-emerald-500 text-white rounded-md px-4 py-2">Add</Button>
+                <Button onClick={handleAddFood} className="bg-emerald-500 hover:bg-emerald-400 text-white rounded-md px-4 py-2">Add</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
-        <div className="max-h-[calc(100vh-13rem)] overflow-y-auto">
+        <div className="max-h-[calc(100vh-13rem)] overflow-y-auto rounded-md border"> 
           <Table className="w-full bg-white shadow-lg rounded-md">
             <TableHeader>
               <TableRow className="bg-gray-100">
@@ -148,11 +148,11 @@ const FoodManagement = () => {
                       setEditFood(item);
                       setIsEditDialogOpen(true);
                       setIsAddDialogOpen(false);
-                    }} className="rounded-md px-4 py-2 bg-yellow-500 text-white">Edit</Button>
+                    }} className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-white hover:text-white">Edit</Button>
                     <Button variant="outline" onClick={() => {
                       setSelectedFoodId(item.id);
                       setIsDeleteDialogOpen(true);
-                    }} className="rounded-md px-4 py-2 bg-red-500 text-white">Delete</Button>
+                    }} className="rounded-md px-4 py-2 bg-red-500 hover:bg-red-400 text-white hover:text-white">Delete</Button>
                   </TableCell>
                 </TableRow>
               ))}
