@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,14 @@ import 'react-toastify/dist/ReactToastify.css';
 const RewardManagement = () => {
   const [customerId, setCustomerId] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [foodItems, setFoodItems] = useState([{ code: '', name: '' }, { code: '', name: '' }, { code: '', name: '' }]);
+  const [foodItems, setFoodItems] = useState([{ code: '', name: '', quantity: 1 }, { code: '', name: '', quantity: 1 }, { code: '', name: '', quantity: 1 }]);
   const [isAddCustomerDialogOpen, setIsAddCustomerDialogOpen] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '', address: '', date_of_birth: '', anniversary: '' });
   const [isLoading, setIsLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState([]); // New state for search results
+  const [searchResults, setSearchResults] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(null);
+  const [searchField, setSearchField] = useState('');
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (customerId) {
@@ -37,16 +40,56 @@ const RewardManagement = () => {
   };
 
   const handleFoodCodeChange = async (index, value) => {
+    setActiveIndex(index);
+    setSearchField('code');
     const newFoodItems = [...foodItems];
     newFoodItems[index].code = value;
     setFoodItems(newFoodItems);
 
-    if (value.length >= 3) {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchFoodItems(value, 'code');
+    }, 300);
+  };
+
+  const handleFoodNameChange = async (index, value) => {
+    setActiveIndex(index);
+    setSearchField('name');
+    const newFoodItems = [...foodItems];
+    newFoodItems[index].name = value;
+    setFoodItems(newFoodItems);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchFoodItems(value, 'name');
+    }, 300);
+  };
+
+  const handleQuantityChange = (index, value) => {
+    const newFoodItems = [...foodItems];
+    newFoodItems[index].quantity = value;
+    setFoodItems(newFoodItems);
+  };
+
+  const searchFoodItems = async (query, field) => {
+    if (query.length >= 1) {
       setIsLoading(true);
-      const { data, error } = await supabase.from('food_items').select('code, name').ilike('code', `%${value}%`);
+      const { data, error } = await supabase
+        .from('food_items')
+        .select('code, name')
+        .ilike(field, `${query}%`)
+        .order(field, { ascending: true })
+        .limit(5);
+
       setIsLoading(false);
       if (error) {
-        console.log('Error fetching food name:', error);
+        console.log('Error fetching food items:', error);
         setSearchResults([]);
       } else {
         setSearchResults(data);
@@ -56,15 +99,16 @@ const RewardManagement = () => {
     }
   };
 
-  const handleFoodItemSelect = (index, food) => {
+  const selectFoodItem = (item, index) => {
     const newFoodItems = [...foodItems];
-    newFoodItems[index] = food;
+    newFoodItems[index] = { code: item.code, name: item.name, quantity: newFoodItems[index].quantity };
     setFoodItems(newFoodItems);
     setSearchResults([]);
+    setActiveIndex(null);
   };
 
   const addFoodInput = () => {
-    setFoodItems([...foodItems, { code: '', name: '' }]);
+    setFoodItems([...foodItems, { code: '', name: '', quantity: 1 }]);
   };
 
   const handleAddCustomer = async () => {
@@ -114,7 +158,8 @@ const RewardManagement = () => {
       const { error: insertError } = await supabase.from('orders').insert({
         customer_id: customerID,
         food_item: item.name,
-        quantity: 1
+        food_code: item.code,  // Include the food code here
+        quantity: item.quantity
       });
 
       if (insertError) {
@@ -130,7 +175,7 @@ const RewardManagement = () => {
   const clearForm = () => {
     setCustomerId('');
     setCustomerName('');
-    setFoodItems([{ code: '', name: '' }, { code: '', name: '' }, { code: '', name: '' }]);
+    setFoodItems([{ code: '', name: '', quantity: 1 }, { code: '', name: '', quantity: 1 }, { code: '', name: '', quantity: 1 }]);
   };
 
   const showToast = (message, type) => {
@@ -171,8 +216,8 @@ const RewardManagement = () => {
         </div>
         
         {foodItems.map((item, index) => (
-          <div key={index} className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <div className="relative w-full sm:w-1/2">
+          <div key={index} className="relative flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="w-full sm:w-1/3 relative">
               <Input
                 type="text"
                 placeholder="Food Code"
@@ -180,28 +225,40 @@ const RewardManagement = () => {
                 onChange={(e) => handleFoodCodeChange(index, e.target.value)}
                 className="w-full"
               />
-              {searchResults.length > 0 && (
-                <ul className="absolute z-10 bg-white border border-gray-200 rounded-md mt-1 max-h-40 overflow-y-auto w-full">
-                  {searchResults.map((result, idx) => (
-                    <li
-                      key={idx}
-                      onClick={() => handleFoodItemSelect(index, result)}
-                      className="p-2 cursor-pointer hover:bg-gray-100 flex justify-between"
-                    >
-                      <span>{result.code}</span>
-                      <span>{result.name}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
-            <Input
-              type="text"
-              placeholder="Food Name"
-              value={item.name}
-              readOnly
-              className="w-full sm:w-1/2"
-            />
+            <div className="w-full sm:w-1/3 relative">
+              <Input
+                type="text"
+                placeholder="Food Name"
+                value={item.name}
+                onChange={(e) => handleFoodNameChange(index, e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <div className="w-full sm:w-1/3 relative">
+              <Input
+                type="number"
+                placeholder="Quantity"
+                value={item.quantity}
+                onChange={(e) => handleQuantityChange(index, e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {activeIndex === index && searchResults.length > 0 && (
+              <div className="absolute z-10 w-full sm:w-[calc(200% + 1rem)] bg-white border border-gray-300 rounded-md shadow-lg mt-1 left-0 top-full -translate-x-4 translate-y-2">
+                {searchResults.map((result) => (
+                  <div
+                    key={result.code}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between"
+                    onClick={() => selectFoodItem(result, index)}
+                  >
+                    <span>{result.code}</span>
+                    <span>{result.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
         

@@ -21,3 +21,46 @@
     - This section allows adding and managing the food items that are eligible for the "order 10 times, get one free" promotion.
     - Provide the ability to set the price and description for each food item.
     - Include functionalities to edit or remove food items from the list.
+
+SUPABASE TABLES :
+    create table
+  public.customers (
+    id serial,
+    name text not null,
+    email text not null,
+    phone text not null,
+    address text not null,
+    date_of_birth date null,
+    anniversary date null,
+    customer_code integer null default nextval('customer_code_seq'::regclass),
+    constraint customers_pkey primary key (id),
+    constraint customers_customer_code_key unique (customer_code)
+  ) tablespace pg_default;
+  ,
+  create table
+  public.food_items (
+    id serial,
+    name text not null,
+    code text not null,
+    constraint food_items_pkey primary key (id),
+    constraint unique_food_code unique (code)
+  ) tablespace pg_default;
+  ,
+  create table
+  public.orders (
+    id serial,
+    customer_id integer null,
+    food_item text not null,
+    quantity integer not null,
+    order_date timestamp without time zone not null default now(),
+    constraint orders_pkey primary key (id),
+    constraint orders_customer_id_fkey foreign key (customer_id) references customers (id)
+  ) tablespace pg_default;
+  ,
+  create table
+  public.users (
+    id serial,
+    username text not null,
+    password text not null,
+    constraint users_pkey primary key (id)
+  ) tablespace pg_default;
