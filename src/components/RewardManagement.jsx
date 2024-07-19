@@ -80,12 +80,22 @@ const RewardManagement = () => {
   const searchFoodItems = async (query, field) => {
     if (query.length >= 1) {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('food_items')
-        .select('code, name')
-        .ilike(field, `${query}%`)
-        .order(field, { ascending: true })
-        .limit(5);
+      let searchQuery;
+      if (field === 'code') {
+        searchQuery = supabase
+          .from('food_items')
+          .select('code, name')
+          .ilike('code', `${query}%`)
+          .order('code', { ascending: true });
+      } else {
+        searchQuery = supabase
+          .from('food_items')
+          .select('code, name')
+          .ilike('name', `${query}%`)
+          .order('name', { ascending: true });
+      }
+
+      const { data, error } = await searchQuery.limit(10);
 
       setIsLoading(false);
       if (error) {
@@ -158,7 +168,7 @@ const RewardManagement = () => {
       const { error: insertError } = await supabase.from('orders').insert({
         customer_id: customerID,
         food_item: item.name,
-        food_code: item.code,  // Include the food code here
+        food_code: item.code,
         quantity: item.quantity
       });
 
