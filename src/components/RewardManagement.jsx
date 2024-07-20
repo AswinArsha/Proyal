@@ -16,9 +16,12 @@ const RewardManagement = () => {
   const [isAddCustomerDialogOpen, setIsAddCustomerDialogOpen] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '', address: '', date_of_birth: '', anniversary: '' });
   const [isLoading, setIsLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
+  const [customerSearchResults, setCustomerSearchResults] = useState([]);
+  const [foodSearchResults, setFoodSearchResults] = useState([]);
   const [activeIndex, setActiveIndex] = useState(null);
   const [searchField, setSearchField] = useState('');
+  const [repeatOrderDialogOpen, setRepeatOrderDialogOpen] = useState(false);
+  const [repeatOrderMessage, setRepeatOrderMessage] = useState('');
   const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -37,6 +40,32 @@ const RewardManagement = () => {
     } else {
       setCustomerName(data ? data.name : '');
     }
+  };
+
+  const handleCustomerCodeChange = async (value) => {
+    setSearchField('customer_code');
+    setCustomerId(value);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchCustomers(value, 'customer_code');
+    }, 300);
+  };
+
+  const handleCustomerNameChange = async (value) => {
+    setSearchField('customer_name');
+    setCustomerName(value);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchCustomers(value, 'name');
+    }, 300);
   };
 
   const handleFoodCodeChange = async (index, value) => {
@@ -77,6 +106,28 @@ const RewardManagement = () => {
     setFoodItems(newFoodItems);
   };
 
+  const searchCustomers = async (query, field) => {
+    if (query.length >= 1) {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('customer_code, name')
+        .ilike(field, `${query}%`)
+        .order(field, { ascending: true })
+        .limit(10);
+
+      setIsLoading(false);
+      if (error) {
+        console.log('Error fetching customers:', error);
+        setCustomerSearchResults([]);
+      } else {
+        setCustomerSearchResults(data);
+      }
+    } else {
+      setCustomerSearchResults([]);
+    }
+  };
+
   const searchFoodItems = async (query, field) => {
     if (query.length >= 1) {
       setIsLoading(true);
@@ -100,20 +151,26 @@ const RewardManagement = () => {
       setIsLoading(false);
       if (error) {
         console.log('Error fetching food items:', error);
-        setSearchResults([]);
+        setFoodSearchResults([]);
       } else {
-        setSearchResults(data);
+        setFoodSearchResults(data);
       }
     } else {
-      setSearchResults([]);
+      setFoodSearchResults([]);
     }
+  };
+
+  const selectCustomer = (customer) => {
+    setCustomerId(customer.customer_code);
+    setCustomerName(customer.name);
+    setCustomerSearchResults([]);
   };
 
   const selectFoodItem = (item, index) => {
     const newFoodItems = [...foodItems];
     newFoodItems[index] = { code: item.code, name: item.name, quantity: newFoodItems[index].quantity };
     setFoodItems(newFoodItems);
-    setSearchResults([]);
+    setFoodSearchResults([]);
     setActiveIndex(null);
   };
 
@@ -148,11 +205,12 @@ const RewardManagement = () => {
     const customerID = customerData.id;
 
     const filteredFoodItems = foodItems.filter(item => item.code && item.name);
+    const itemsReachingMilestone = [];
 
     for (const item of filteredFoodItems) {
-      const { data, error, count } = await supabase
+      const { data, error } = await supabase
         .from('orders')
-        .select('*', { count: 'exact' })
+        .select('quantity')
         .eq('customer_id', customerID)
         .eq('food_item', item.name);
 
@@ -161,8 +219,10 @@ const RewardManagement = () => {
         continue;
       }
 
-      if (count >= 9) {
-        showToast(`Customer is ordering ${item.name} for the 10th time!`, 'info');
+      const totalQuantity = data.reduce((sum, order) => sum + order.quantity, 0) + item.quantity;
+
+      if (totalQuantity >= 10) {
+        itemsReachingMilestone.push(item.name);
       }
 
       const { error: insertError } = await supabase.from('orders').insert({
@@ -179,6 +239,13 @@ const RewardManagement = () => {
 
     setIsLoading(false);
     showToast('Orders submitted successfully', 'success');
+
+    if (itemsReachingMilestone.length > 0) {
+      const foodItemsList = itemsReachingMilestone.map(item => `<span class="text-blue-600 font-semibold">${item}</span>`).join(', ');
+      setRepeatOrderMessage(`Great news! <strong class="text-green-600">${customerName}</strong> has now ordered the following items for the 10th time: ${foodItemsList}`);
+      setRepeatOrderDialogOpen(true);
+    }
+
     clearForm();
   };
 
@@ -193,17 +260,17 @@ const RewardManagement = () => {
   };
 
   return (
-    <Card className="shadow-xl bg-white rounded-lg max-w-3xl mx-auto">
+    <Card className="bg-white rounded-lg max-w-3xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Reward Management</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="relative flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
           <Input
             type="text"
-            placeholder="Customer ID"
+            placeholder="Customer Code"
             value={customerId}
-            onChange={(e) => setCustomerId(e.target.value)}
+            onChange={(e) => handleCustomerCodeChange(e.target.value)}
             className="w-full sm:w-1/2"
           />
           <div className="relative w-full sm:w-1/2">
@@ -211,7 +278,7 @@ const RewardManagement = () => {
               type="text"
               placeholder="Customer Name"
               value={customerName}
-              readOnly
+              onChange={(e) => handleCustomerNameChange(e.target.value)}
               className="w-full"
             />
             {!customerName && (
@@ -221,6 +288,20 @@ const RewardManagement = () => {
               >
                 +
               </Button>
+            )}
+            {customerSearchResults.length > 0 && (
+              <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 left-0 top-full">
+                {customerSearchResults.map((result) => (
+                  <div
+                    key={result.customer_code}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between"
+                    onClick={() => selectCustomer(result)}
+                  >
+                    <span>{result.customer_code}</span>
+                    <span>{result.name}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -255,9 +336,9 @@ const RewardManagement = () => {
               />
             </div>
 
-            {activeIndex === index && searchResults.length > 0 && (
+            {activeIndex === index && foodSearchResults.length > 0 && (
               <div className="absolute z-10 w-full sm:w-[calc(200% + 1rem)] bg-white border border-gray-300 rounded-md shadow-lg mt-1 left-0 top-full -translate-x-4 translate-y-2">
-                {searchResults.map((result) => (
+                {foodSearchResults.map((result) => (
                   <div
                     key={result.code}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between"
@@ -318,6 +399,7 @@ const RewardManagement = () => {
               </Label>
               <Input
                 id="phone"
+                type="tel"
                 value={newCustomer.phone}
                 onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
                 className="col-span-3"
@@ -360,9 +442,28 @@ const RewardManagement = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" onClick={handleAddCustomer} disabled={isLoading}>
+            <Button type="button" variant="outline" onClick={() => setIsAddCustomerDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleAddCustomer} disabled={isLoading}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Add Customer
+              Add
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={repeatOrderDialogOpen} onOpenChange={setRepeatOrderDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Reward Notification</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p dangerouslySetInnerHTML={{ __html: repeatOrderMessage }} />
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setRepeatOrderDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

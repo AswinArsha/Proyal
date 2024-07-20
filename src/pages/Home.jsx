@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Gift, Users, BarChart2, Coffee } from 'lucide-react';
 
 const Home = () => {
   const location = useLocation();
@@ -15,8 +16,9 @@ const Home = () => {
             variant="ghost" 
             className={`w-full justify-start ${location.pathname === '/home/reward-management' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
           >
-            <Link to="reward-management" className="w-full text-left">
-              Reward Management
+            <Link to="reward-management" className="w-full text-left flex items-center space-x-2">
+              <Gift className="w-5 h-5" />
+              <span>Reward </span>
             </Link>
           </Button>
           <Button 
@@ -24,8 +26,9 @@ const Home = () => {
             variant="ghost" 
             className={`w-full justify-start ${location.pathname === '/home/customer-management' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
           >
-            <Link to="customer-management" className="w-full text-left">
-              Customer Management
+            <Link to="customer-management" className="w-full text-left flex items-center space-x-2">
+              <Users className="w-5 h-5" />
+              <span>Customer </span>
             </Link>
           </Button>
           <Button 
@@ -33,8 +36,9 @@ const Home = () => {
             variant="ghost" 
             className={`w-full justify-start ${location.pathname === '/home/analytics' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
           >
-            <Link to="analytics" className="w-full text-left">
-              Analytics
+            <Link to="analytics" className="w-full text-left flex items-center space-x-2">
+              <BarChart2 className="w-5 h-5" />
+              <span>Analytics</span>
             </Link>
           </Button>
           <Button 
@@ -42,8 +46,9 @@ const Home = () => {
             variant="ghost" 
             className={`w-full justify-start ${location.pathname === '/home/food-management' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
           >
-            <Link to="food-management" className="w-full text-left">
-              Food Management
+            <Link to="food-management" className="w-full text-left flex items-center space-x-2">
+              <Coffee className="w-5 h-5" />
+              <span>Food </span>
             </Link>
           </Button>
         </nav>

@@ -21,7 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Loader2 } from "lucide-react";
+import { Loader2, User, Mail, Phone, Home, Calendar, Gift } from 'lucide-react';
 import {
   Tabs,
   TabsContent,
@@ -392,7 +392,7 @@ const CustomerManagement = () => {
         </Pagination>
         {selectedCustomer && (
           <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-            <DialogContent className="p-6 rounded-lg shadow-lg max-w-5xl h-[90vh] overflow-y-auto">
+            <DialogContent className="p-6 rounded-lg shadow-lg max-w-3xl h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-xl font-semibold">
                   Customer Details
@@ -404,30 +404,41 @@ const CustomerManagement = () => {
                   <TabsTrigger value="history">Order History</TabsTrigger>
                 </TabsList>
                 <TabsContent value="details">
-                  <div className="flex space-x-8">
-                    <div className="w-1/2  p-4 rounded-md">
-                      <h2 className="text-xl font-bold mb-4">Customer Details</h2>
-                      <p className="mb-2">
-                        <strong>Customer Code:</strong> {selectedCustomer.customer_code}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Name:</strong> {selectedCustomer.name}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Email:</strong> {selectedCustomer.email}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Phone:</strong> {selectedCustomer.phone}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Address:</strong> {selectedCustomer.address}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Date of Birth:</strong> {selectedCustomer.date_of_birth}
-                      </p>
-                      <p className="mb-2">
-                        <strong>Anniversary:</strong> {selectedCustomer.anniversary}
-                      </p>
+                  <div className="flex flex-col space-y-4 p-4 rounded-md ">
+                    <div className="flex items-center space-x-2 text-lg">
+                      <User className="w-5 h-5 text-blue-500" />
+                      <span className="font-semibold">Customer Code:</span>
+                      <span>{selectedCustomer.customer_code}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-lg">
+                      <User className="w-5 h-5 text-blue-500" />
+                      <span className="font-semibold">Name:</span>
+                      <span>{selectedCustomer.name}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-lg">
+                      <Mail className="w-5 h-5 text-blue-500" />
+                      <span className="font-semibold">Email:</span>
+                      <span>{selectedCustomer.email}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-lg">
+                      <Phone className="w-5 h-5 text-blue-500" />
+                      <span className="font-semibold">Phone:</span>
+                      <span>{selectedCustomer.phone}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-lg">
+                      <Home className="w-5 h-5 text-blue-500" />
+                      <span className="font-semibold">Address:</span>
+                      <span>{selectedCustomer.address}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-lg">
+                      <Calendar className="w-5 h-5 text-blue-500" />
+                      <span className="font-semibold">Date of Birth:</span>
+                      <span>{selectedCustomer.date_of_birth}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-lg">
+                      <Gift className="w-5 h-5 text-blue-500" />
+                      <span className="font-semibold">Anniversary:</span>
+                      <span>{selectedCustomer.anniversary}</span>
                     </div>
                   </div>
                 </TabsContent>
@@ -480,50 +491,67 @@ const CustomerManagement = () => {
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <Input
-                  type="text"
-                  placeholder="Name"
-                  value={editCustomer.name}
-                  onChange={(e) =>
-                    setEditCustomer({ ...editCustomer, name: e.target.value })
-                  }
-                  className="w-full p-2 rounded-md"
-                  required
-                />
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={editCustomer.email}
-                  onChange={(e) =>
-                    setEditCustomer({ ...editCustomer, email: e.target.value })
-                  }
-                  className="w-full p-2 rounded-md"
-                />
-                <Input
-                  type="text"
-                  placeholder="Phone"
-                  value={editCustomer.phone}
-                  onChange={(e) =>
-                    setEditCustomer({ ...editCustomer, phone: e.target.value })
-                  }
-                  className="w-full p-2 rounded-md"
-                  required
-                />
-                <Input
-                  type="text"
-                  placeholder="Address"
-                  value={editCustomer.address}
-                  onChange={(e) =>
-                    setEditCustomer({
-                      ...editCustomer,
-                      address: e.target.value,
-                    })
-                  }
-                  className="w-full p-2 rounded-md"
-                />
                 <div className="flex flex-col space-y-1">
-                  <Label>Date of Birth</Label>
+                  <Label htmlFor="edit-name">Name</Label>
                   <Input
+                    id="edit-name"
+                    type="text"
+                    placeholder="Name"
+                    value={editCustomer.name}
+                    onChange={(e) =>
+                      setEditCustomer({ ...editCustomer, name: e.target.value })
+                    }
+                    className="w-full p-2 rounded-md"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    placeholder="Email"
+                    value={editCustomer.email}
+                    onChange={(e) =>
+                      setEditCustomer({ ...editCustomer, email: e.target.value })
+                    }
+                    className="w-full p-2 rounded-md"
+                  />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <Label htmlFor="edit-phone">Phone</Label>
+                  <Input
+                    id="edit-phone"
+                    type="text"
+                    placeholder="Phone"
+                    value={editCustomer.phone}
+                    onChange={(e) =>
+                      setEditCustomer({ ...editCustomer, phone: e.target.value })
+                    }
+                    className="w-full p-2 rounded-md"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <Label htmlFor="edit-address">Address</Label>
+                  <Input
+                    id="edit-address"
+                    type="text"
+                    placeholder="Address"
+                    value={editCustomer.address}
+                    onChange={(e) =>
+                      setEditCustomer({
+                        ...editCustomer,
+                        address: e.target.value,
+                      })
+                    }
+                    className="w-full p-2 rounded-md"
+                  />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <Label htmlFor="edit-date-of-birth">Date of Birth</Label>
+                  <Input
+                    id="edit-date-of-birth"
                     type="date"
                     value={editCustomer.date_of_birth}
                     onChange={(e) =>
@@ -536,8 +564,9 @@ const CustomerManagement = () => {
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
-                  <Label>Anniversary</Label>
+                  <Label htmlFor="edit-anniversary">Anniversary</Label>
                   <Input
+                    id="edit-anniversary"
                     type="date"
                     value={editCustomer.anniversary}
                     onChange={(e) =>

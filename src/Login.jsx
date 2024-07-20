@@ -4,7 +4,6 @@ import { Button } from "./components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -41,7 +40,7 @@ const Login = () => {
     }
 
     // If credentials are valid, proceed with login
-    navigate("/home");
+    navigate("/home/reward-management");
   };
 
   return (
