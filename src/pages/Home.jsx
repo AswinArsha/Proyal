@@ -9,7 +9,7 @@ const Home = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Card className="w-64 h-full p-4 bg-white shadow-md">
+      <Card className="w-64 h-full p-4 bg-white shadow-md flex flex-col justify-between">
         <nav className="space-y-4">
           <Button 
             asChild 
@@ -18,7 +18,7 @@ const Home = () => {
           >
             <Link to="reward-management" className="w-full text-left flex items-center space-x-2">
               <Gift className="w-5 h-5" />
-              <span>Reward </span>
+              <span>Reward Management</span>
             </Link>
           </Button>
           <Button 
@@ -28,7 +28,7 @@ const Home = () => {
           >
             <Link to="customer-management" className="w-full text-left flex items-center space-x-2">
               <Users className="w-5 h-5" />
-              <span>Customer </span>
+              <span>Customer Management</span>
             </Link>
           </Button>
           <Button 
@@ -48,12 +48,12 @@ const Home = () => {
           >
             <Link to="food-management" className="w-full text-left flex items-center space-x-2">
               <Coffee className="w-5 h-5" />
-              <span>Food </span>
+              <span>Food Management</span>
             </Link>
           </Button>
         </nav>
       </Card>
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-auto">
         <Outlet />
       </div>
     </div>

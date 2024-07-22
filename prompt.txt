@@ -1,0 +1,1216 @@
+HOW TO USE SHADCN CHARTS : 
+installation
+Note: If you are trying to use charts with React 19 or the Next.js 15, you will need the recharts@alpha release currently.
+
+CLI
+Manual
+Run the following command to install chart.tsx
+npx shadcn-ui@latest add chart
+Copy
+Add the following colors to your CSS file
+@layer base {
+  :root {
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+ 
+  .dark {
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+Your First Chart
+Let's build your first chart. We'll build a bar chart, add a grid, axis, tooltip and legend.
+
+Start by defining your data
+The following data represents the number of desktop and mobile users for each month.
+
+Note: Your data can be in any shape. You are not limited to the shape of the data below. Use the dataKey prop to map your data to the chart.
+
+const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+]
+Copy
+Define your chart config
+The chart config holds configuration for the chart. This is where you place human-readable strings, such as labels, icons and color tokens for theming.
+
+import { type ChartConfig } from "@/components/ui/chart"
+ 
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "#2563eb",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "#60a5fa",
+  },
+} satisfies ChartConfig
+Copy
+Build your chart
+You can now build your chart using Recharts components.
+
+Important: Remember to set a min-h-[VALUE] on the ChartContainer component. This is required for the chart be responsive.
+
+"use client"
+ 
+import { Bar, BarChart } from "recharts"
+ 
+import { ChartConfig, ChartContainer } from "@/components/ui/chart"
+ 
+const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+]
+ 
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "#2563eb",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "#60a5fa",
+  },
+} satisfies ChartConfig
+ 
+export function Component() {
+  return (
+    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+      <BarChart accessibilityLayer data={chartData}>
+        <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+        <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+      </BarChart>
+    </ChartContainer>
+  )
+}
+
+Add a Grid
+Let's add a grid to the chart.
+
+Import the CartesianGrid component.
+import { Bar, BarChart, CartesianGrid } from "recharts"
+Copy
+Add the CartesianGrid component to your chart.
+<ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+  <BarChart accessibilityLayer data={chartData}>
+    <CartesianGrid vertical={false} />
+    <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+    <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+  </BarChart>
+  
+  Add an Axis
+To add an x-axis to the chart, we'll use the XAxis component.
+
+Import the XAxis component.
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+Copy
+Add the XAxis component to your chart.
+<ChartContainer config={chartConfig} className="h-[200px] w-full">
+  <BarChart accessibilityLayer data={chartData}>
+    <CartesianGrid vertical={false} />
+    <XAxis
+      dataKey="month"
+      tickLine={false}
+      tickMargin={10}
+      axisLine={false}
+      tickFormatter={(value) => value.slice(0, 3)}
+    />
+    <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+    <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+  </BarChart>
+</ChartContainer>
+
+
+
+Add Tooltip
+So far we've only used components from Recharts. They look great out of the box thanks to some customization in the chart component.
+
+To add a tooltip, we'll use the custom ChartTooltip and ChartTooltipContent components from chart.
+
+Import the ChartTooltip and ChartTooltipContent components.
+import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+Copy
+Add the components to your chart.
+<ChartContainer config={chartConfig} className="h-[200px] w-full">
+  <BarChart accessibilityLayer data={chartData}>
+    <CartesianGrid vertical={false} />
+    <XAxis
+      dataKey="month"
+      tickLine={false}
+      tickMargin={10}
+      axisLine={false}
+      tickFormatter={(value) => value.slice(0, 3)}
+    />
+    <ChartTooltip content={<ChartTooltipContent />} />
+    <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+    <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+  </BarChart>
+</ChartContainer>
+
+
+Add Legend
+We'll do the same for the legend. We'll use the ChartLegend and ChartLegendContent components from chart.
+
+Import the ChartLegend and ChartLegendContent components.
+import { ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+Copy
+Add the components to your chart.
+<ChartContainer config={chartConfig} className="h-[200px] w-full">
+  <BarChart accessibilityLayer data={chartData}>
+    <CartesianGrid vertical={false} />
+    <XAxis
+      dataKey="month"
+      tickLine={false}
+      tickMargin={10}
+      axisLine={false}
+      tickFormatter={(value) => value.slice(0, 3)}
+    />
+    <ChartTooltip content={<ChartTooltipContent />} />
+    <ChartLegend content={<ChartLegendContent />} />
+    <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+    <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+  </BarChart>
+</ChartContainer>
+
+,
+SHADCN CHARTS EXAMPLES :
+
+AREA CHARTS : 
+code - 
+import { TrendingUp } from "lucide-react"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+const chartData = [
+  { month: "January", desktop: 186 },
+  { month: "February", desktop: 305 },
+  { month: "March", desktop: 237 },
+  { month: "April", desktop: 73 },
+  { month: "May", desktop: 209 },
+  { month: "June", desktop: 214 },
+]
+
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig
+
+export function Component() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Area Chart</CardTitle>
+        <CardDescription>
+          Showing total visitors for the last 6 months
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <AreaChart
+            accessibilityLayer
+            data={chartData}
+            margin={{
+              left: 12,
+              right: 12,
+            }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => value.slice(0, 3)}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="line" />}
+            />
+            <Area
+              dataKey="desktop"
+              type="natural"
+              fill="var(--color-desktop)"
+              fillOpacity={0.4}
+              stroke="var(--color-desktop)"
+            />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter>
+        <div className="flex w-full items-start gap-2 text-sm">
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2 font-medium leading-none">
+              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="flex items-center gap-2 leading-none text-muted-foreground">
+              January - June 2024
+            </div>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
+Theme - @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --chart-1: 173 58% 39%;
+    --chart-2: 12 76% 61%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-5: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-2: 340 75% 55%;
+    }
+}
+
+,
+BAR CHART : 
+code - 
+
+import { TrendingUp } from "lucide-react"
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+const chartData = [
+  { month: "January", desktop: 186 },
+  { month: "February", desktop: 305 },
+  { month: "March", desktop: 237 },
+  { month: "April", desktop: 73 },
+  { month: "May", desktop: 209 },
+  { month: "June", desktop: 214 },
+]
+
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig
+
+export function Component() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Bar Chart</CardTitle>
+        <CardDescription>January - June 2024</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <BarChart accessibilityLayer data={chartData}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => value.slice(0, 3)}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8} />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 font-medium leading-none">
+          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+        </div>
+        <div className="leading-none text-muted-foreground">
+          Showing total visitors for the last 6 months
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
+Theme - 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --chart-1: 173 58% 39%;
+    --chart-2: 12 76% 61%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-5: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-2: 340 75% 55%;
+    }
+}
+,
+
+LINE CHART : 
+code - 
+
+import { TrendingUp } from "lucide-react"
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+const chartData = [
+  { month: "January", desktop: 186 },
+  { month: "February", desktop: 305 },
+  { month: "March", desktop: 237 },
+  { month: "April", desktop: 73 },
+  { month: "May", desktop: 209 },
+  { month: "June", desktop: 214 },
+]
+
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig
+
+export function Component() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Line Chart</CardTitle>
+        <CardDescription>January - June 2024</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <LineChart
+            accessibilityLayer
+            data={chartData}
+            margin={{
+              left: 12,
+              right: 12,
+            }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => value.slice(0, 3)}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Line
+              dataKey="desktop"
+              type="natural"
+              stroke="var(--color-desktop)"
+              strokeWidth={2}
+              dot={false}
+            />
+          </LineChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 font-medium leading-none">
+          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+        </div>
+        <div className="leading-none text-muted-foreground">
+          Showing total visitors for the last 6 months
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
+
+Theme - 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --chart-1: 173 58% 39%;
+    --chart-2: 12 76% 61%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-5: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-2: 340 75% 55%;
+    }
+}
+
+,
+
+
+PIE CHART  : 
+code - 
+
+import { TrendingUp } from "lucide-react"
+import { Pie, PieChart } from "recharts"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+const chartData = [
+  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
+  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
+  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
+  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
+  { browser: "other", visitors: 90, fill: "var(--color-other)" },
+]
+
+const chartConfig = {
+  visitors: {
+    label: "Visitors",
+  },
+  chrome: {
+    label: "Chrome",
+    color: "hsl(var(--chart-1))",
+  },
+  safari: {
+    label: "Safari",
+    color: "hsl(var(--chart-2))",
+  },
+  firefox: {
+    label: "Firefox",
+    color: "hsl(var(--chart-3))",
+  },
+  edge: {
+    label: "Edge",
+    color: "hsl(var(--chart-4))",
+  },
+  other: {
+    label: "Other",
+    color: "hsl(var(--chart-5))",
+  },
+} satisfies ChartConfig
+
+export function Component() {
+  return (
+    <Card className="flex flex-col">
+      <CardHeader className="items-center pb-0">
+        <CardTitle>Pie Chart - Label</CardTitle>
+        <CardDescription>January - June 2024</CardDescription>
+      </CardHeader>
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[250px] pb-0 [&_.recharts-pie-label-text]:fill-foreground"
+        >
+          <PieChart>
+            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+            <Pie data={chartData} dataKey="visitors" label nameKey="browser" />
+          </PieChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="flex-col gap-2 text-sm">
+        <div className="flex items-center gap-2 font-medium leading-none">
+          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+        </div>
+        <div className="leading-none text-muted-foreground">
+          Showing total visitors for the last 6 months
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
+
+Theme - 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --chart-1: 173 58% 39%;
+    --chart-2: 12 76% 61%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-5: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-2: 340 75% 55%;
+    }
+}
+,
+TOOLTIP : 
+import { Bar, BarChart, XAxis } from "recharts"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+const chartData = [
+  { date: "2024-07-15", running: 450, swimming: 300 },
+  { date: "2024-07-16", running: 380, swimming: 420 },
+  { date: "2024-07-17", running: 520, swimming: 120 },
+  { date: "2024-07-18", running: 140, swimming: 550 },
+  { date: "2024-07-19", running: 600, swimming: 350 },
+  { date: "2024-07-20", running: 480, swimming: 400 },
+]
+const chartConfig = {
+  running: {
+    label: "Running",
+    color: "hsl(var(--chart-1))",
+  },
+  swimming: {
+    label: "Swimming",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig
+export function Component() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Tooltip - Default</CardTitle>
+        <CardDescription>
+          Default tooltip with ChartTooltipContent.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <BarChart accessibilityLayer data={chartData}>
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => {
+                return new Date(value).toLocaleDateString("en-US", {
+                  weekday: "short",
+                })
+              }}
+            />
+            <Bar
+              dataKey="running"
+              stackId="a"
+              fill="var(--color-running)"
+              radius={[0, 0, 4, 4]}
+            />
+            <Bar
+              dataKey="swimming"
+              stackId="a"
+              fill="var(--color-swimming)"
+              radius={[4, 4, 0, 0]}
+            />
+            <ChartTooltip
+              content={<ChartTooltipContent />}
+              cursor={false}
+              defaultIndex={1}
+            />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  )
+}
+,
+SKELOTON :
+Use to show a placeholder while content is loading.
+Code : 
+import { Skeleton } from "@/components/ui/skeleton"
+ 
+export function SkeletonDemo() {
+  return (
+    <div className="flex items-center space-x-4">
+      <Skeleton className="h-12 w-12 rounded-full" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-4 w-[200px]" />
+      </div>
+    </div>
+  )
+}
+
+
+,
+
+SUPABASE TABLES :
+create table
+  public.orders (
+    id serial,
+    customer_id integer null,
+    food_item text not null,
+    quantity integer not null,
+    order_date timestamp without time zone not null default now(),
+    food_code text not null,
+    constraint orders_pkey primary key (id),
+    constraint orders_customer_id_fkey foreign key (customer_id) references customers (id)
+  ) tablespace pg_default;
+  ,
+  create table
+  public.food_items (
+    id serial,
+    name text not null,
+    code text not null,
+    constraint food_items_pkey primary key (id),
+    constraint unique_food_code unique (code)
+  ) tablespace pg_default;
+  ,
+  create table
+  public.customers (
+    id serial,
+    name text not null,
+    email text not null,
+    phone text not null,
+    address text not null,
+    date_of_birth date null,
+    anniversary date null,
+    customer_code integer null default nextval('customer_code_seq'::regclass),
+    constraint customers_pkey primary key (id),
+    constraint customers_customer_code_key unique (customer_code)
+  ) tablespace pg_default;
+,
+// ../supabase.js
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://pfltsmixqnmukxphydyl.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmbHRzbWl4cW5tdWt4cGh5ZHlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkyMTk3NzcsImV4cCI6MjAzNDc5NTc3N30.PLXrDNSEkY4YG6jbJlbPaElgYpm-xHFIf6IkZUa29Z0';
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+, Analtics.jsx :
+import React, { useState, useEffect } from 'react';
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip
+} from 'recharts';
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle
+} from '@/components/ui/card';
+import {
+  Tabs, TabsContent, TabsList, TabsTrigger
+} from '@/components/ui/tabs';
+import { supabase } from '../supabase'; // Adjust the import path as needed
+import {
+  ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent
+} from '@/components/ui/chart';
+import { TrendingUp, Users, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+
+const PAGE_SIZE = 10;
+
+const Analytics = () => {
+  const [customerData, setCustomerData] = useState([]);
+  const [orderData, setOrderData] = useState([]);
+  const [foodItemData, setFoodItemData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [customersResponse, ordersResponse, foodItemsResponse] = await Promise.all([
+        supabase.from('customers').select('*'),
+        supabase.from('orders').select('*'),
+        supabase.from('food_items').select('*')
+      ]);
+
+      setCustomerData(customersResponse.data || []);
+      setOrderData(ordersResponse.data || []);
+      setFoodItemData(foodItemsResponse.data || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const processCustomerGrowth = () => {
+    return customerData.map((customer, index) => ({
+      date: new Date(customer.created_at).toLocaleDateString(),
+      customers: index + 1
+    })).slice(-30); // Last 30 days
+  };
+
+  const processOrderTrends = () => {
+    const orderCounts = orderData.reduce((acc, order) => {
+      const date = new Date(order.order_date).toLocaleDateString();
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.entries(orderCounts).map(([date, count]) => ({ date, orders: count })).slice(-30); // Last 30 days
+  };
+
+  const processPopularItems = () => {
+    const itemCounts = orderData.reduce((acc, order) => {
+      acc[order.food_item] = (acc[order.food_item] || 0) + order.quantity;
+      return acc;
+    }, {});
+
+    return Object.entries(itemCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5); // Top 5 items
+  };
+
+  const StatCard = ({ title, value, icon: Icon, trend }) => (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <p className={`text-xs ${trend > 0 ? 'text-green-500' : 'text-red-500'} flex items-center`}>
+          {trend > 0 ? <ArrowUpRight className="mr-1 h-4 w-4" /> : <ArrowDownRight className="mr-1 h-4 w-4" />}
+          {Math.abs(trend)}% from last month
+        </p>
+      </CardContent>
+    </Card>
+  );
+
+  if (loading) {
+    return <div>Loading analytics...</div>;
+  }
+
+  const chartConfig = {
+    customers: {
+      label: "Customers",
+      color: "hsl(var(--chart-1))",
+    },
+    orders: {
+      label: "Orders",
+      color: "hsl(var(--chart-2))",
+    },
+    foodItems: {
+      label: "Food Items",
+      color: "hsl(var(--chart-3))",
+    },
+    revenue: {
+      label: "Revenue",
+      color: "hsl(var(--chart-4))",
+    },
+  };
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Total Customers" value={customerData.length} icon={Users} trend={5.2} />
+        <StatCard title="Total Orders" value={orderData.length} icon={ShoppingCart} trend={-2.1} />
+        <StatCard title="Total Revenue" value={`$${orderData.reduce((sum, order) => sum + order.quantity * 10, 0)}`} icon={DollarSign} trend={10.5} />
+        <StatCard title="Menu Items" value={foodItemData.length} icon={TrendingUp} trend={3.2} />
+      </div>
+
+      <Tabs defaultValue="growth" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="growth">Customer Growth</TabsTrigger>
+          <TabsTrigger value="orders">Order Trends</TabsTrigger>
+          <TabsTrigger value="items">Popular Items</TabsTrigger>
+        </TabsList>
+        <TabsContent value="growth" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Growth</CardTitle>
+              <CardDescription>New customers over time</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ChartContainer config={chartConfig}>
+                <LineChart
+                  accessibilityLayer
+                  data={processCustomerGrowth()}
+                  margin={{
+                    left: 12,
+                    right: 12,
+                  }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                  <YAxis />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                  <Line dataKey="customers" type="natural" stroke="var(--color-customers)" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="orders" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Trends</CardTitle>
+              <CardDescription>Orders over time</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ChartContainer config={chartConfig}>
+                <BarChart accessibilityLayer data={processOrderTrends()} margin={{ left: 12, right: 12 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                  <YAxis />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                  <Bar dataKey="orders" fill="var(--color-orders)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="items" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Popular Items</CardTitle>
+              <CardDescription>Most ordered food items</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ChartContainer config={chartConfig}>
+                <PieChart accessibilityLayer data={processPopularItems()} margin={{ left: 12, right: 12 }}>
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                  <Pie dataKey="value" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} />
+                </PieChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default Analytics;
+,The charts provided in the Shadcn documentation include various types and themes. Please select the necessary charts for my Analytics section from the above given charts examples, ensuring they are capable of real-time data fetching from my Supabase tables.can you improve my Analtics.jsx with the below improvements.change the 
+By incorporating these additional analytics and UI/UX improvements, the Customer Analytics section will provide more comprehensive insights and a better user experience.
+
+
+## New Analytics to Add
+
+### Customer Analytics:
+1. **Total Number of Customers:** 
+   - **Placement:** Prominent card at the top of the analytics section.
+   - **UI Element:** Summary card with a large number and percentage change indicator.
+
+2. **New Customers Added Over Time:**
+   - **Placement:** Below the summary cards in the Customer Growth tab.
+   - **UI Element:** Line chart showing monthly or yearly trends.
+
+3. **Most Common Customer Locations/Addresses:**
+   - **Placement:** Customer Analytics tab.
+   - **UI Element:** Pie chart or bar chart to visualize the distribution by location.
+
+4. **Customer Retention Rate:**
+   - **Placement:** Next to the Total Number of Customers card.
+   - **UI Element:** Summary card with a percentage and a small line chart or sparkline showing the trend.
+
+5. **Customer Churn Rate:**
+   - **Placement:** Next to the Customer Retention Rate card.
+   - **UI Element:** Summary card similar to the retention rate.
+
+### Order Analytics:
+1. **Total Number of Orders:**
+   - **Placement:** Summary card at the top, alongside Total Customers.
+   - **UI Element:** Summary card with a large number and percentage change indicator.
+
+2. **Total Quantity of Food Items Ordered:**
+   - **Placement:** Below the Total Number of Orders card.
+   - **UI Element:** Summary card.
+
+3. **Orders Over Time:**
+   - **Placement:** Order Trends tab.
+   - **UI Element:** Bar chart showing daily, weekly, or monthly trends.
+
+4. **Most Frequently Ordered Food Items:**
+   - **Placement:** Order Trends tab.
+   - **UI Element:** Bar chart or pie chart.
+
+5. **Order Frequency Per Customer:**
+   - **Placement:** Order Trends tab.
+   - **UI Element:** Bar chart or line chart.
+
+### Food Item Analytics:
+1. **Most Popular Food Items:**
+   - **Placement:** Popular Items tab.
+   - **UI Element:** Bar chart or pie chart.
+
+2. **Least Popular Food Items:**
+   - **Placement:** Popular Items tab.
+   - **UI Element:** Bar chart or pie chart.
+
+### Revenue Analytics:
+1. **Total Revenue:**
+   - **Placement:** Summary card at the top, alongside Total Orders.
+   - **UI Element:** Summary card with a large number and percentage change indicator.
+
+2. **Revenue Over Time:**
+   - **Placement:** Revenue tab.
+   - **UI Element:** Line chart or area chart showing daily, weekly, or monthly trends.
+
+3. **Average Revenue Per Customer:**
+   - **Placement:** Revenue tab.
+   - **UI Element:** Bar chart or line chart.
+
+### Customer Segmentation:
+1. **Segmentation of Customers Based on Order Frequency:**
+   - **Placement:** Customer Segmentation tab.
+   - **UI Element:** Bar chart or pie chart.
+
+2. **High-Value Customers:**
+   - **Placement:** Customer Segmentation tab.
+   - **UI Element:** Summary card or bar chart.
+
+### Retention and Churn Analysis:
+1. **Customer Churn Rate:**
+   - **Placement:** Customer Analytics tab or a dedicated Retention and Churn tab.
+   - **UI Element:** Line chart or bar chart.
+
+2. **Retention Rate:**
+   - **Placement:** Customer Analytics tab or a dedicated Retention and Churn tab.
+   - **UI Element:** Line chart or bar chart.
+
+## UI Placement Suggestions
+
+1. **Top Summary Section:**
+   - Place high-level metrics like Total Customers, Total Orders, Total Revenue, and Retention Rate at the top in summary cards. This provides a quick overview of the most important metrics.
+
+2. **Tabs for Detailed Analytics:**
+   - Use tabs to organize detailed analytics, such as Customer Growth, Order Trends, Popular Items, Revenue, Customer Segmentation, and Retention and Churn.
+
+3. **Charts and Graphs:**
+   - Use a mix of line charts, bar charts, area charts, and pie charts to visualize different metrics. Ensure each chart has clear labels, legends, and tooltips for better readability and interaction.
+
+4. **Responsive Design:**
+   - Ensure the layout is responsive and adjusts well to different screen sizes. Use grid layouts and flexbox for organizing the content.
+
+5. **Consistent Styling:**
+   - Apply a consistent color scheme, typography, and spacing throughout the analytics section. Use icons to enhance visual appeal and understanding.
+
+6. **Interactive Elements:**
+   - Add tooltips, hover effects, and clickable elements to make the analytics interactive and engaging.
+
+
+This layout ensures that the most critical metrics are visible at a glance, while detailed analytics are organized into tabs for easy navigation and in-depth analysis.
+
+, add these improvements to the Analytics.jsx

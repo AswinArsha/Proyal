@@ -64,3 +64,12 @@ SUPABASE TABLES :
     password text not null,
     constraint users_pkey primary key (id)
   ) tablespace pg_default;
+
+,
+17. **Loading Indicators:**
+   - Show loading indicators while data is being fetched to improve user experience like skeletons.
+18. **Use of Icons:**
+    - Incorporate relevant icons for different metrics and sections for better visual representation.use lucide-react icons.
+    
+19. **Filters and Date Range Selection:**
+   - Allow users to filter data by date range  like react-datepicker and customer segments .
