@@ -893,6 +893,7 @@ create table
     constraint customers_pkey primary key (id),
     constraint customers_customer_code_key unique (customer_code)
   ) tablespace pg_default;
+
 ,
 // ../supabase.js
 import { createClient } from '@supabase/supabase-js';
@@ -1102,115 +1103,120 @@ const Analytics = () => {
 };
 
 export default Analytics;
-,The charts provided in the Shadcn documentation include various types and themes. Please select the necessary charts for my Analytics section from the above given charts examples, ensuring they are capable of real-time data fetching from my Supabase tables.can you improve my Analtics.jsx with the below improvements.change the 
-By incorporating these additional analytics and UI/UX improvements, the Customer Analytics section will provide more comprehensive insights and a better user experience.
 
+,The charts i provided above from the Shadcn documentation include various types and themes. Please select the necessary charts for my Analytics section from the examples, ensuring they support real-time data fetching from my Supabase tables.
+Additionally, i have listed the new analytics features I need to add and a complete redesign of the UI for the charts and overall sections to enhance the current UI of Analytics.jsx, which is built using React, Tailwind CSS, Supabase, and Shadcn to make the analytics section look modern and user-friendly.
 
-## New Analytics to Add
+### New Analytics Features to Add
 
-### Customer Analytics:
-1. **Total Number of Customers:** 
-   - **Placement:** Prominent card at the top of the analytics section.
-   - **UI Element:** Summary card with a large number and percentage change indicator.
+1. **Customer Analytics:**
+   - **Total number of customers:** Already included.
+   - **New customers added over time (e.g., per month or per year):** Add a line chart to show the growth trend.
+   - **Most common customer locations/addresses:** Add a bar chart or pie chart to display the distribution of customer locations.
+   - **Customer retention rate:** Add a line chart to show the retention rate over time.
 
-2. **New Customers Added Over Time:**
-   - **Placement:** Below the summary cards in the Customer Growth tab.
-   - **UI Element:** Line chart showing monthly or yearly trends.
+2. **Order Analytics:**
+   - **Total number of orders:** Already included.
+   - **Total quantity of food items ordered:** Add a line chart to show the total quantity ordered over time.
+   - **Orders over time (e.g., daily, weekly, monthly trends):** Already included.
+   - **Most frequently ordered food items:** Already included.
+   - **Order frequency per customer:** Add a bar chart to display the frequency distribution.
 
-3. **Most Common Customer Locations/Addresses:**
-   - **Placement:** Customer Analytics tab.
-   - **UI Element:** Pie chart or bar chart to visualize the distribution by location.
+3. **Food Item Analytics:**
+   - **Most popular food items (based on the number of orders):** Already included.
+   - **Least popular food items:** Add a bar chart or pie chart to display the least popular items.
 
-4. **Customer Retention Rate:**
-   - **Placement:** Next to the Total Number of Customers card.
-   - **UI Element:** Summary card with a percentage and a small line chart or sparkline showing the trend.
+4. **Revenue Analytics:**
+   - **Total revenue (if prices are available and can be integrated):** Already included.
+   - **Revenue over time (e.g., daily, weekly, monthly):** Add a line chart to show revenue trends.
+   - **Average revenue per customer:** Add a bar chart to display the average revenue per customer.
 
-5. **Customer Churn Rate:**
-   - **Placement:** Next to the Customer Retention Rate card.
-   - **UI Element:** Summary card similar to the retention rate.
+5. **Customer Segmentation:**
+   - **Segmentation of customers based on order frequency:** Add a pie chart or bar chart to show segmentation.
+   - **High-value customers (based on order quantity or frequency):** Add a bar chart to highlight high-value customers.
 
-### Order Analytics:
-1. **Total Number of Orders:**
-   - **Placement:** Summary card at the top, alongside Total Customers.
-   - **UI Element:** Summary card with a large number and percentage change indicator.
+6. **Retention and Churn Analysis:**
+   - **Customer churn rate (percentage of customers who have stopped ordering):** Add a line chart to show churn rate over time.
+   - **Retention rate (percentage of customers who continue to place orders over time):** Already included.
 
-2. **Total Quantity of Food Items Ordered:**
-   - **Placement:** Below the Total Number of Orders card.
-   - **UI Element:** Summary card.
+### UI/UX Improvements for Analytics Section
 
-3. **Orders Over Time:**
-   - **Placement:** Order Trends tab.
-   - **UI Element:** Bar chart showing daily, weekly, or monthly trends.
+1. **Layout:**
+   - **Dashboard Overview Section:**
+     - Place a grid of statistic cards at the top for key metrics such as total customers, total orders, total revenue, and total menu items.
+   - **Tabs Section:**
+     - Use tabs to categorize different types of analytics: "Customer Growth," "Order Trends," "Popular Items," "Revenue Trends," "Customer Segmentation," and "Retention & Churn."
 
-4. **Most Frequently Ordered Food Items:**
-   - **Placement:** Order Trends tab.
-   - **UI Element:** Bar chart or pie chart.
+2. **Charts:**
+   - **Customer Growth:**
+     - Line Chart showing the number of new customers added over time.
+   - **Order Trends:**
+     - Bar Chart showing the total number of orders over time.
+     - Line Chart showing the total quantity of food items ordered over time.
+   - **Popular Items:**
+     - Pie Chart showing the most popular food items.
+     - Bar Chart showing the least popular food items.
+   - **Revenue Trends:**
+     - Line Chart showing the total revenue over time.
+     - Bar Chart showing the average revenue per customer.
+   - **Customer Segmentation:**
+     - Pie Chart showing customer segmentation based on order frequency.
+     - Bar Chart highlighting high-value customers.
+   - **Retention & Churn:**
+     - Line Chart showing the customer churn rate over time.
+     - Line Chart showing the customer retention rate over time.
 
-5. **Order Frequency Per Customer:**
-   - **Placement:** Order Trends tab.
-   - **UI Element:** Bar chart or line chart.
+3. **Additional UI Elements:**
+   - **Datepicker:**
+     - Add React Datepicker components for filtering data by date range.
+   - **Icons:**
+     - Use Lucide React icons for better visual representation and quick recognition of different metrics.
+   - **Skeleton Loader:**
+     - Add Shadcn Skeleton components to show loading states for the charts and data tables.
 
-### Food Item Analytics:
-1. **Most Popular Food Items:**
-   - **Placement:** Popular Items tab.
-   - **UI Element:** Bar chart or pie chart.
+### Suggested UI Redesign
 
-2. **Least Popular Food Items:**
-   - **Placement:** Popular Items tab.
-   - **UI Element:** Bar chart or pie chart.
+1. **Dashboard Overview Section:**
+   - Display four statistic cards at the top, each representing a key metric. Use icons from Lucide React for visual appeal.
+   - Example:
+     - Total Customers (icon: Users)
+     - Total Orders (icon: ShoppingCart)
+     - Total Revenue (icon: DollarSign)
+     - Menu Items (icon: TrendingUp)
 
-### Revenue Analytics:
-1. **Total Revenue:**
-   - **Placement:** Summary card at the top, alongside Total Orders.
-   - **UI Element:** Summary card with a large number and percentage change indicator.
+2. **Tabs Section:**
+   - Create tabs to switch between different analytics categories. Use Tabs from Shadcn UI.
+   - Example:
+     - Customer Growth
+     - Order Trends
+     - Popular Items
+     - Revenue Trends
+     - Customer Segmentation
+     - Retention & Churn
 
-2. **Revenue Over Time:**
-   - **Placement:** Revenue tab.
-   - **UI Element:** Line chart or area chart showing daily, weekly, or monthly trends.
+3. **Charts Layout:**
+   - **Customer Growth Tab:**
+     - Display a Line Chart showing new customers added over time.
+   - **Order Trends Tab:**
+     - Display a Bar Chart showing total orders over time.
+     - Display a Line Chart showing total quantity ordered over time.
+   - **Popular Items Tab:**
+     - Display a Pie Chart for the most popular items.
+     - Display a Bar Chart for the least popular items.
+   - **Revenue Trends Tab:**
+     - Display a Line Chart for total revenue over time.
+     - Display a Bar Chart for average revenue per customer.
+   - **Customer Segmentation Tab:**
+     - Display a Pie Chart for customer segmentation.
+     - Display a Bar Chart for high-value customers.
+   - **Retention & Churn Tab:**
+     - Display a Line Chart for customer churn rate.
+     - Display a Line Chart for customer retention rate.
 
-3. **Average Revenue Per Customer:**
-   - **Placement:** Revenue tab.
-   - **UI Element:** Bar chart or line chart.
+4. **Datepicker:**
+   - Add a Datepicker at the top of each tab for filtering data by date range. This allows users to view analytics for specific periods use react date picker.
 
-### Customer Segmentation:
-1. **Segmentation of Customers Based on Order Frequency:**
-   - **Placement:** Customer Segmentation tab.
-   - **UI Element:** Bar chart or pie chart.
+5. **Loading State:**
+   - Add Skeleton loaders to each chart and table to indicate loading states while data is being fetched use shad cn skeleton.
 
-2. **High-Value Customers:**
-   - **Placement:** Customer Segmentation tab.
-   - **UI Element:** Summary card or bar chart.
-
-### Retention and Churn Analysis:
-1. **Customer Churn Rate:**
-   - **Placement:** Customer Analytics tab or a dedicated Retention and Churn tab.
-   - **UI Element:** Line chart or bar chart.
-
-2. **Retention Rate:**
-   - **Placement:** Customer Analytics tab or a dedicated Retention and Churn tab.
-   - **UI Element:** Line chart or bar chart.
-
-## UI Placement Suggestions
-
-1. **Top Summary Section:**
-   - Place high-level metrics like Total Customers, Total Orders, Total Revenue, and Retention Rate at the top in summary cards. This provides a quick overview of the most important metrics.
-
-2. **Tabs for Detailed Analytics:**
-   - Use tabs to organize detailed analytics, such as Customer Growth, Order Trends, Popular Items, Revenue, Customer Segmentation, and Retention and Churn.
-
-3. **Charts and Graphs:**
-   - Use a mix of line charts, bar charts, area charts, and pie charts to visualize different metrics. Ensure each chart has clear labels, legends, and tooltips for better readability and interaction.
-
-4. **Responsive Design:**
-   - Ensure the layout is responsive and adjusts well to different screen sizes. Use grid layouts and flexbox for organizing the content.
-
-5. **Consistent Styling:**
-   - Apply a consistent color scheme, typography, and spacing throughout the analytics section. Use icons to enhance visual appeal and understanding.
-
-6. **Interactive Elements:**
-   - Add tooltips, hover effects, and clickable elements to make the analytics interactive and engaging.
-
-
-This layout ensures that the most critical metrics are visible at a glance, while detailed analytics are organized into tabs for easy navigation and in-depth analysis.
-
-, add these improvements to the Analytics.jsx
+These suggestions will help you create a comprehensive and visually appealing analytics dashboard that provides valuable insights into customer behavior, sales performance, and business trends.
