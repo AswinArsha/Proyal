@@ -185,13 +185,13 @@ const CustomerManagement = () => {
   };
 
   return (
-    <Card className="shadow-xl -mt-4 overflow-y-hidden bg-white rounded-lg">
+    <Card className="shadow-xl -mt-4 bg-white rounded-lg h-90% flex flex-col">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
           Customer Management
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col flex-grow">
         <div className="flex justify-between mb-6">
           <Input
             type="text"
@@ -302,7 +302,7 @@ const CustomerManagement = () => {
             </DialogContent>
           </Dialog>
         </div>
-        <div className="max-h-[calc(100vh-14rem)] overflow-y-auto rounded-md border">
+        <div className="flex-grow overflow-y-auto rounded-md border">
           <Table className="w-full bg-white shadow-lg rounded-md">
             <TableHeader className="sticky top-0 bg-gray-100">
               <TableRow>
