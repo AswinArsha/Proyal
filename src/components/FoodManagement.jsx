@@ -80,7 +80,7 @@ const FoodManagement = () => {
   };
 
   return (
-    <Card className="shadow-xl bg-white rounded-lg">
+    <Card className="shadow-xl bg-white rounded-lg -mt-4 ">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Food Management</CardTitle>
       </CardHeader>
@@ -127,10 +127,10 @@ const FoodManagement = () => {
             </DialogContent>
           </Dialog>
         </div>
-        <div className="max-h-[calc(100vh-13rem)] overflow-y-auto rounded-md border"> 
+        <div className="max-h-[calc(100vh-13rem)] overflow-y-auto rounded-md border relative"> 
           <Table className="w-full bg-white shadow-lg rounded-md">
-            <TableHeader>
-              <TableRow className="bg-gray-100">
+          <TableHeader className="sticky top-0 z-10 bg-gray-100">
+              <TableRow>
                 <TableCell className="p-4">No</TableCell>
                 <TableCell className="p-4">Food Name</TableCell>
                 <TableCell className="p-4">Food Code</TableCell>

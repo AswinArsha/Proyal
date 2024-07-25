@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer
+  BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 import {
-  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
+  Card, CardContent, CardDescription, CardHeader, CardTitle
 } from '@/components/ui/card';
 import {
   Tabs, TabsContent, TabsList, TabsTrigger
@@ -12,12 +12,23 @@ import { supabase } from '../supabase';
 import {
   ChartContainer, ChartTooltip, ChartTooltipContent
 } from '@/components/ui/chart';
-import { TrendingUp, Users, ShoppingCart, DollarSign, IndianRupee ,ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Users, ShoppingCart, MapPin, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css'; // theme css file
 import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
+const PAGE_SIZE = 15;
+const ORDER_PAGE_SIZE = 20;
 
 const Analytics = () => {
   const [customerData, setCustomerData] = useState([]);
@@ -31,6 +42,9 @@ const Analytics = () => {
       key: 'selection'
     }
   ]);
+  const [mostPopularPage, setMostPopularPage] = useState(1);
+  const [leastPopularPage, setLeastPopularPage] = useState(1);
+  const [orderPage, setOrderPage] = useState(1);
 
   useEffect(() => {
     fetchData();
@@ -98,9 +112,28 @@ const Analytics = () => {
       .sort((a, b) => b.value - a.value);
 
     return {
-      mostPopular: sortedItems.slice(0, 5),
-      leastPopular: sortedItems.slice(-5)
+      mostPopular: sortedItems,
+      leastPopular: sortedItems.slice().reverse()
     };
+  };
+
+  const processTopCustomerLocations = () => {
+    const locationCounts = customerData.reduce((acc, customer) => {
+      const location = customer.address || 'Unknown';
+      acc[location] = (acc[location] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.entries(locationCounts).map(([location, count]) => ({ location, count }));
+  };
+
+  const processNewCustomersThisMonth = () => {
+    const startOfMonth = new Date(dateRange[0].startDate.getFullYear(), dateRange[0].startDate.getMonth(), 1);
+    const endOfMonth = new Date(dateRange[0].startDate.getFullYear(), dateRange[0].startDate.getMonth() + 1, 0);
+    return customerData.filter(customer => {
+      const createdAt = new Date(customer.created_at);
+      return createdAt >= startOfMonth && createdAt <= endOfMonth;
+    }).length;
   };
 
   const processRevenueTrends = () => {
@@ -209,6 +242,24 @@ const Analytics = () => {
 
   const { mostPopular, leastPopular } = processPopularItems();
 
+  const getPagedItems = (items, page, pageSize) => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return items.slice(start, end > items.length ? items.length : end);
+  };
+
+  const handlePreviousPage = (pageSetter, currentPage) => {
+    if (currentPage > 1) {
+      pageSetter(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = (pageSetter, currentPage, items, pageSize) => {
+    if (currentPage * pageSize < items.length) {
+      pageSetter(currentPage + 1);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
@@ -216,7 +267,7 @@ const Analytics = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 w-2/3">
           <StatCard title="Total Customers" value={customerData.length} icon={Users} trend={5.2} />
           <StatCard title="Total Orders" value={orderData.length} icon={ShoppingCart} trend={-2.1} />
-          <StatCard title="Total Revenue" value={`₹${orderData.reduce((sum, order) => sum + order.quantity * 10, 0)}`} icon={IndianRupee} trend={10.5} />
+          <StatCard title="New Customers " value={processNewCustomersThisMonth()} icon={Users} trend={10.5} />
           <StatCard title="Menu Items" value={foodItemData.length} icon={TrendingUp} trend={3.2} />
         </div>
 
@@ -327,9 +378,9 @@ const Analytics = () => {
           <TabsTrigger value="growth">Customer Growth</TabsTrigger>
           <TabsTrigger value="orders">Order Trends</TabsTrigger>
           <TabsTrigger value="items">Popular Items</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue Trends</TabsTrigger>
+          <TabsTrigger value="locations">Top Customer Locations</TabsTrigger>
           <TabsTrigger value="segmentation">Customer Segmentation</TabsTrigger>
-         
+          <TabsTrigger value="retention">Retention & Churn</TabsTrigger>
         </TabsList>
         <TabsContent value="growth" className="space-y-4">
           <Card>
@@ -339,7 +390,7 @@ const Analytics = () => {
             </CardHeader>
             <CardContent className="h-90%">
               <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={150}>
                   <LineChart
                     data={processCustomerGrowth()}
                     margin={{ left: 12, right: 12 }}
@@ -363,15 +414,36 @@ const Analytics = () => {
             </CardHeader>
             <CardContent className="h-90%">
               <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={processOrderTrends()} margin={{ left: 12, right: 12 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis />
-                    <Tooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="orders" fill="var(--color-orders)" radius={4} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="flex justify-center">
+                  <div className="w-full p-2">
+                    <ResponsiveContainer width="100%" height={360}>
+                      <BarChart data={getPagedItems(processOrderTrends(), orderPage, ORDER_PAGE_SIZE)} margin={{ left: 12, right: 12 }}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                        <YAxis />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Bar dataKey="orders" fill="var(--color-orders)" radius={4} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious onClick={() => handlePreviousPage(setOrderPage, orderPage)} disabled={orderPage === 1} />
+                        </PaginationItem>
+                        {[...Array(Math.ceil(processOrderTrends().length / ORDER_PAGE_SIZE)).keys()].map(page => (
+                          <PaginationItem key={page + 1}>
+                            <PaginationLink onClick={() => setOrderPage(page + 1)} isActive={orderPage === page + 1}>
+                              {page + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+                        <PaginationItem>
+                          <PaginationNext onClick={() => handleNextPage(setOrderPage, orderPage, processOrderTrends(), ORDER_PAGE_SIZE)} disabled={orderPage === Math.ceil(processOrderTrends().length / ORDER_PAGE_SIZE)} />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                </div>
               </ChartContainer>
             </CardContent>
           </Card>
@@ -382,13 +454,12 @@ const Analytics = () => {
               <CardTitle>Popular Items</CardTitle>
               <CardDescription>Most and least ordered food items</CardDescription>
             </CardHeader>
-            <CardContent className="h-[400px]">
+            <CardContent className="h-90%">
               <ChartContainer config={chartConfig}>
-                <div className="flex flex-col md:flex-row">
-                  <div className="w-full md:w-1/2 p-2">
-                    <h3 className="text-lg font-semibold mb-2">Most Popular</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={mostPopular} margin={{ left: 12, right: 12 }}>
+                <div className="flex justify-center ">
+                  <div className="w-full p-2">
+                    <ResponsiveContainer width="100%" height={360}>
+                      <BarChart data={getPagedItems(mostPopular, mostPopularPage, PAGE_SIZE)} margin={{ left: 12, right: 12 }}>
                         <CartesianGrid vertical={false} />
                         <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
                         <YAxis />
@@ -396,40 +467,46 @@ const Analytics = () => {
                         <Bar dataKey="value" fill="var(--color-foodItems)" radius={4} />
                       </BarChart>
                     </ResponsiveContainer>
-                  </div>
-                  <div className="w-full md:w-1/2 p-2">
-                    <h3 className="text-lg font-semibold mb-2">Least Popular</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={leastPopular} margin={{ left: 12, right: 12 }}>
-                        <CartesianGrid vertical={false} />
-                        <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-                        <YAxis />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="value" fill="var(--color-foodItems)" radius={4} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious onClick={() => handlePreviousPage(setMostPopularPage, mostPopularPage)} disabled={mostPopularPage === 1} />
+                        </PaginationItem>
+                        {[...Array(Math.ceil(mostPopular.length / PAGE_SIZE)).keys()].map(page => (
+                          <PaginationItem key={page + 1}>
+                            <PaginationLink onClick={() => setMostPopularPage(page + 1)} isActive={mostPopularPage === page + 1}>
+                              {page + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+                        <PaginationItem>
+                          <PaginationNext onClick={() => handleNextPage(setMostPopularPage, mostPopularPage, mostPopular, PAGE_SIZE)} disabled={mostPopularPage === Math.ceil(mostPopular.length / PAGE_SIZE)} />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </div>
                 </div>
               </ChartContainer>
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="revenue" className="space-y-4">
+        <TabsContent value="locations" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Revenue Trends</CardTitle>
-              <CardDescription>Total revenue over time</CardDescription>
+              <CardTitle>Top Customer Locations</CardTitle>
+              <CardDescription>Top locations from which orders are placed</CardDescription>
             </CardHeader>
             <CardContent className="h-90%">
               <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={processRevenueTrends()} margin={{ left: 12, right: 12 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis />
+                <ResponsiveContainer width="100%" height={360}>
+                  <PieChart>
+                    <Pie data={processTopCustomerLocations()} dataKey="count" nameKey="location" outerRadius={150} fill="var(--color-customers)">
+                      {processTopCustomerLocations().map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={chartConfig.customers.color} />
+                      ))}
+                    </Pie>
                     <Tooltip content={<ChartTooltipContent />} />
-                    <Line dataKey="revenue" type="natural" stroke="var(--color-revenue)" strokeWidth={2} dot={false} />
-                  </LineChart>
+                  </PieChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
@@ -456,7 +533,40 @@ const Analytics = () => {
             </CardContent>
           </Card>
         </TabsContent>
-     
+        <TabsContent value="retention" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Retention & Churn</CardTitle>
+              <CardDescription>Customer retention and churn rates over time</CardDescription>
+            </CardHeader>
+            <CardContent className="h-90%">
+              <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={processCustomerChurnRate()} margin={{ left: 12, right: 12 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis />
+                    <Tooltip content={<ChartTooltipContent />} />
+                    <Line dataKey="churn" type="natural" stroke="var(--color-orders)" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+            <CardContent className="h-90%">
+              <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={processCustomerRetentionRate()} margin={{ left: 12, right: 12 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis />
+                    <Tooltip content={<ChartTooltipContent />} />
+                    <Line dataKey="retention" type="natural" stroke="var(--color-customers)" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );

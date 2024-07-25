@@ -36,6 +36,16 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { format } from "date-fns";
 
 const PAGE_SIZE = 10;
 
@@ -61,19 +71,54 @@ const CustomerManagement = () => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentCustomerPage, setCurrentCustomerPage] = useState(1);
+  const [birthDateFilter, setBirthDateFilter] = useState("");
+  const [anniversaryFilter, setAnniversaryFilter] = useState("");
+  const [triggerFetch, setTriggerFetch] = useState(0);
 
   useEffect(() => {
     fetchCustomers();
-  }, [currentCustomerPage, search]);
+  }, [currentCustomerPage, search, birthDateFilter, anniversaryFilter, triggerFetch]);
 
   const fetchCustomers = async () => {
     const start = (currentCustomerPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE - 1;
-    const { data, error, count } = await supabase
+    let query = supabase
       .from("customers")
       .select("*", { count: "exact" })
       .ilike("name", `%${search}%`)
       .range(start, end);
+
+    const now = new Date();
+    const startOfWeek = now.getDate() - now.getDay();
+    const endOfWeek = startOfWeek + 6;
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    if (birthDateFilter) {
+      if (birthDateFilter === "today") {
+        query = query.eq("date_of_birth", format(now, "yyyy-MM-dd"));
+      } else if (birthDateFilter === "this_week") {
+        query = query.gte("date_of_birth", format(new Date(now.setDate(startOfWeek)), "yyyy-MM-dd"))
+          .lte("date_of_birth", format(new Date(now.setDate(endOfWeek)), "yyyy-MM-dd"));
+      } else if (birthDateFilter === "this_month") {
+        query = query.gte("date_of_birth", format(startOfMonth, "yyyy-MM-dd"))
+          .lte("date_of_birth", format(endOfMonth, "yyyy-MM-dd"));
+      }
+    }
+
+    if (anniversaryFilter) {
+      if (anniversaryFilter === "today") {
+        query = query.eq("anniversary", format(now, "yyyy-MM-dd"));
+      } else if (anniversaryFilter === "this_week") {
+        query = query.gte("anniversary", format(new Date(now.setDate(startOfWeek)), "yyyy-MM-dd"))
+          .lte("anniversary", format(new Date(now.setDate(endOfWeek)), "yyyy-MM-dd"));
+      } else if (anniversaryFilter === "this_month") {
+        query = query.gte("anniversary", format(startOfMonth, "yyyy-MM-dd"))
+          .lte("anniversary", format(endOfMonth, "yyyy-MM-dd"));
+      }
+    }
+
+    const { data, error, count } = await query;
 
     if (error) {
       console.log("Error fetching customers:", error);
@@ -81,6 +126,13 @@ const CustomerManagement = () => {
       setCustomers(data);
       setTotalCustomers(count);
     }
+  };
+
+  const handleClearFilters = () => {
+    setBirthDateFilter("");
+    setAnniversaryFilter("");
+    setSearch("");
+    setTriggerFetch(prev => prev + 1);
   };
 
   const fetchOrderHistory = async (customerId) => {
@@ -200,6 +252,41 @@ const CustomerManagement = () => {
             onChange={(e) => setSearch(e.target.value)}
             className="w-1/3 rounded-md p-2 focus:ring focus:ring-emerald-200"
           />
+          <Select
+            value={birthDateFilter}
+            onValueChange={(value) => setBirthDateFilter(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by Birth Date" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Birth Date</SelectLabel>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="this_week">This Week</SelectItem>
+                <SelectItem value="this_month">This Month</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <Select
+            value={anniversaryFilter}
+            onValueChange={(value) => setAnniversaryFilter(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by Anniversary" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Anniversary</SelectLabel>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="this_week">This Week</SelectItem>
+                <SelectItem value="this_month">This Month</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <Button onClick={handleClearFilters} className="bg-gray-500 hover:bg-gray-400 text-white rounded-md px-4 py-2">
+            Clear
+          </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button
@@ -302,6 +389,7 @@ const CustomerManagement = () => {
             </DialogContent>
           </Dialog>
         </div>
+        
         <div className="flex-grow overflow-y-auto rounded-md border">
           <Table className="w-full bg-white shadow-lg rounded-md">
             <TableHeader className="sticky top-0 bg-gray-100">
@@ -433,12 +521,12 @@ const CustomerManagement = () => {
                     <div className="flex items-center space-x-2 text-lg">
                       <Calendar className="w-5 h-5 text-blue-500" />
                       <span className="font-semibold">Date of Birth:</span>
-                      <span>{selectedCustomer.date_of_birth}</span>
+                      <span>{format(new Date(selectedCustomer.date_of_birth), "dd/MM/yyyy")}</span>
                     </div>
                     <div className="flex items-center space-x-2 text-lg">
                       <Gift className="w-5 h-5 text-blue-500" />
                       <span className="font-semibold">Anniversary:</span>
-                      <span>{selectedCustomer.anniversary}</span>
+                      <span>{format(new Date(selectedCustomer.anniversary), "dd/MM/yyyy")}</span>
                     </div>
                   </div>
                 </TabsContent>
