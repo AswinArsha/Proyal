@@ -18,7 +18,7 @@ const Home = () => {
           >
             <Link to="reward-management" className="w-full text-left flex items-center space-x-2">
               <Gift className="w-5 h-5" />
-              <span>Reward Management</span>
+              <span>Reward </span>
             </Link>
           </Button>
           <Button 
@@ -28,7 +28,18 @@ const Home = () => {
           >
             <Link to="customer-management" className="w-full text-left flex items-center space-x-2">
               <Users className="w-5 h-5" />
-              <span>Customer Management</span>
+              <span>Customer </span>
+            </Link>
+          </Button>
+        
+          <Button 
+            asChild 
+            variant="ghost" 
+            className={`w-full justify-start ${location.pathname === '/home/food-management' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+          >
+            <Link to="food-management" className="w-full text-left flex items-center space-x-2">
+              <Coffee className="w-5 h-5" />
+              <span>Food</span>
             </Link>
           </Button>
           <Button 
@@ -39,16 +50,6 @@ const Home = () => {
             <Link to="analytics" className="w-full text-left flex items-center space-x-2">
               <BarChart2 className="w-5 h-5" />
               <span>Analytics</span>
-            </Link>
-          </Button>
-          <Button 
-            asChild 
-            variant="ghost" 
-            className={`w-full justify-start ${location.pathname === '/home/food-management' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-          >
-            <Link to="food-management" className="w-full text-left flex items-center space-x-2">
-              <Coffee className="w-5 h-5" />
-              <span>Food Management</span>
             </Link>
           </Button>
         </nav>

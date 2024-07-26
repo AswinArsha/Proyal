@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
+  AreaChart, Area, BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle
@@ -12,23 +12,17 @@ import { supabase } from '../supabase';
 import {
   ChartContainer, ChartTooltip, ChartTooltipContent
 } from '@/components/ui/chart';
-import { TrendingUp, Users, ShoppingCart, MapPin, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Users, ShoppingCart, ArrowUpRight, ArrowDownRight, ShoppingBasket } from 'lucide-react';
 import { DateRangePicker } from 'react-date-range';
-import 'react-date-range/dist/styles.css'; // main style file
-import 'react-date-range/dist/theme/default.css'; // theme css file
-import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
+  Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious,
 } from "@/components/ui/pagination";
 
 const PAGE_SIZE = 15;
-const ORDER_PAGE_SIZE = 20;
 
 const Analytics = () => {
   const [customerData, setCustomerData] = useState([]);
@@ -44,7 +38,7 @@ const Analytics = () => {
   ]);
   const [mostPopularPage, setMostPopularPage] = useState(1);
   const [leastPopularPage, setLeastPopularPage] = useState(1);
-  const [orderPage, setOrderPage] = useState(1);
+  const [locationPage, setLocationPage] = useState(1);
 
   useEffect(() => {
     fetchData();
@@ -173,26 +167,9 @@ const Analytics = () => {
     return Object.entries(segmentation).map(([segment, count]) => ({ segment, count }));
   };
 
-  const processCustomerChurnRate = () => {
-    return [
-      { date: "2024-01", churn: 5 },
-      { date: "2024-02", churn: 10 },
-      { date: "2024-03", churn: 15 },
-      { date: "2024-04", churn: 20 },
-      { date: "2024-05", churn: 25 },
-      { date: "2024-06", churn: 30 },
-    ];
-  };
-
-  const processCustomerRetentionRate = () => {
-    return [
-      { date: "2024-01", retention: 95 },
-      { date: "2024-02", retention: 90 },
-      { date: "2024-03", retention: 85 },
-      { date: "2024-04", retention: 80 },
-      { date: "2024-05", retention: 75 },
-      { date: "2024-06", retention: 70 },
-    ];
+  const calculatePercentageChange = (currentValue, previousValue) => {
+    if (previousValue === 0) return currentValue > 0 ? 100 : 0;
+    return ((currentValue - previousValue) / previousValue) * 100;
   };
 
   const StatCard = ({ title, value, icon: Icon, trend }) => (
@@ -203,10 +180,12 @@ const Analytics = () => {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        <p className={`text-xs ${trend > 0 ? 'text-green-500' : 'text-red-500'} flex items-center`}>
-          {trend > 0 ? <ArrowUpRight className="mr-1 h-4 w-4" /> : <ArrowDownRight className="mr-1 h-4 w-4" />}
-          {Math.abs(trend)}% from last month
-        </p>
+        {trend !== null && (
+          <p className={`text-xs ${trend > 0 ? 'text-green-500' : 'text-red-500'} flex items-center`}>
+            {trend > 0 ? <ArrowUpRight className="mr-1 h-4 w-4" /> : <ArrowDownRight className="mr-1 h-4 w-4" />}
+            {Math.abs(trend).toFixed(1)}% from last month
+          </p>
+        )}
       </CardContent>
     </Card>
   );
@@ -220,6 +199,40 @@ const Analytics = () => {
       </div>
     );
   }
+
+  const currentMonthStart = startOfMonth(new Date());
+  const previousMonthStart = startOfMonth(subMonths(new Date(), 1));
+  const previousMonthEnd = endOfMonth(subMonths(new Date(), 1));
+
+  const currentMonthCustomers = customerData.filter(customer => {
+    const createdAt = new Date(customer.created_at);
+    return createdAt >= currentMonthStart;
+  }).length;
+
+  const previousMonthCustomers = customerData.filter(customer => {
+    const createdAt = new Date(customer.created_at);
+    return createdAt >= previousMonthStart && createdAt <= previousMonthEnd;
+  }).length;
+
+  const currentMonthOrders = orderData.filter(order => {
+    const orderDate = new Date(order.order_date);
+    return orderDate >= currentMonthStart;
+  }).length;
+
+  const previousMonthOrders = orderData.filter(order => {
+    const orderDate = new Date(order.order_date);
+    return orderDate >= previousMonthStart && orderDate <= previousMonthEnd;
+  }).length;
+
+  const newCustomersThisMonth = processNewCustomersThisMonth();
+  const previousMonthNewCustomers = customerData.filter(customer => {
+    const createdAt = new Date(customer.created_at);
+    return createdAt >= previousMonthStart && createdAt <= previousMonthEnd;
+  }).length;
+
+  const customerTrend = calculatePercentageChange(currentMonthCustomers, previousMonthCustomers);
+  const orderTrend = calculatePercentageChange(currentMonthOrders, previousMonthOrders);
+  const newCustomerTrend = calculatePercentageChange(newCustomersThisMonth, previousMonthNewCustomers);
 
   const chartConfig = {
     customers: {
@@ -239,6 +252,13 @@ const Analytics = () => {
       color: "hsl(var(--chart-4))",
     },
   };
+
+  const pieChartColors = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))"
+  ];
 
   const { mostPopular, leastPopular } = processPopularItems();
 
@@ -265,10 +285,10 @@ const Analytics = () => {
       <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
       <div className="flex gap-4 w-2/3">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 w-2/3">
-          <StatCard title="Total Customers" value={customerData.length} icon={Users} trend={5.2} />
-          <StatCard title="Total Orders" value={orderData.length} icon={ShoppingCart} trend={-2.1} />
-          <StatCard title="New Customers " value={processNewCustomersThisMonth()} icon={Users} trend={10.5} />
-          <StatCard title="Menu Items" value={foodItemData.length} icon={TrendingUp} trend={3.2} />
+          <StatCard title="Total Customers" value={currentMonthCustomers} icon={Users} trend={customerTrend} />
+          <StatCard title="Total Orders" value={currentMonthOrders} icon={ShoppingCart} trend={orderTrend} />
+          <StatCard title="New Customers " value={newCustomersThisMonth} icon={Users} trend={newCustomerTrend} />
+          <StatCard title="Menu Items" value={foodItemData.length} icon={ShoppingBasket} trend={null} />
         </div>
 
         <div className="w-1/3 ml-4">
@@ -377,12 +397,11 @@ const Analytics = () => {
         <TabsList>
           <TabsTrigger value="growth">Customer Growth</TabsTrigger>
           <TabsTrigger value="orders">Order Trends</TabsTrigger>
-          <TabsTrigger value="items">Popular Items</TabsTrigger>
-          <TabsTrigger value="locations">Top Customer Locations</TabsTrigger>
           <TabsTrigger value="segmentation">Customer Segmentation</TabsTrigger>
-          <TabsTrigger value="retention">Retention & Churn</TabsTrigger>
+          <TabsTrigger value="locations">Top Customer Locations</TabsTrigger>
+          <TabsTrigger value="items">Popular Items</TabsTrigger>
         </TabsList>
-        <TabsContent value="growth" className="space-y-4">
+             <TabsContent value="growth" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Customer Growth</CardTitle>
@@ -390,8 +409,8 @@ const Analytics = () => {
             </CardHeader>
             <CardContent className="h-90%">
               <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height={150}>
-                  <LineChart
+                <ResponsiveContainer width="100%" height="20%">
+                  <AreaChart
                     data={processCustomerGrowth()}
                     margin={{ left: 12, right: 12 }}
                   >
@@ -399,14 +418,14 @@ const Analytics = () => {
                     <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
                     <YAxis />
                     <Tooltip content={<ChartTooltipContent />} />
-                    <Line dataKey="customers" type="natural" stroke="var(--color-customers)" strokeWidth={2} dot={false} />
-                  </LineChart>
+                    <Area dataKey="customers" type="natural" fill="var(--color-customers)" fillOpacity={0.4} stroke="var(--color-customers)" />
+                  </AreaChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="orders" className="space-y-4">
+  <TabsContent value="orders" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Order Trends</CardTitle>
@@ -417,31 +436,14 @@ const Analytics = () => {
                 <div className="flex justify-center">
                   <div className="w-full p-2">
                     <ResponsiveContainer width="100%" height={360}>
-                      <BarChart data={getPagedItems(processOrderTrends(), orderPage, ORDER_PAGE_SIZE)} margin={{ left: 12, right: 12 }}>
+                      <LineChart data={processOrderTrends()} margin={{ left: 12, right: 12 }}>
                         <CartesianGrid vertical={false} />
                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
                         <YAxis />
                         <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="orders" fill="var(--color-orders)" radius={4} />
-                      </BarChart>
+                        <Line dataKey="orders" type="natural" stroke="var(--color-orders)" strokeWidth={2} dot={{ fill: "var(--color-orders)" }} activeDot={{ r: 6 }} />
+                      </LineChart>
                     </ResponsiveContainer>
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious onClick={() => handlePreviousPage(setOrderPage, orderPage)} disabled={orderPage === 1} />
-                        </PaginationItem>
-                        {[...Array(Math.ceil(processOrderTrends().length / ORDER_PAGE_SIZE)).keys()].map(page => (
-                          <PaginationItem key={page + 1}>
-                            <PaginationLink onClick={() => setOrderPage(page + 1)} isActive={orderPage === page + 1}>
-                              {page + 1}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ))}
-                        <PaginationItem>
-                          <PaginationNext onClick={() => handleNextPage(setOrderPage, orderPage, processOrderTrends(), ORDER_PAGE_SIZE)} disabled={orderPage === Math.ceil(processOrderTrends().length / ORDER_PAGE_SIZE)} />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
                   </div>
                 </div>
               </ChartContainer>
@@ -498,16 +500,36 @@ const Analytics = () => {
             </CardHeader>
             <CardContent className="h-90%">
               <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height={360}>
-                  <PieChart>
-                    <Pie data={processTopCustomerLocations()} dataKey="count" nameKey="location" outerRadius={150} fill="var(--color-customers)">
-                      {processTopCustomerLocations().map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={chartConfig.customers.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<ChartTooltipContent />} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="flex justify-center ">
+                  <div className="w-full p-2">
+                    <ResponsiveContainer width="100%" height={360}>
+                      <BarChart data={getPagedItems(processTopCustomerLocations(), locationPage, PAGE_SIZE)} margin={{ left: 12, right: 12 }}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis dataKey="location" tickLine={false} axisLine={false} tickMargin={8} />
+                        <YAxis />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Bar dataKey="count" fill="var(--color-customers)" radius={4} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious onClick={() => handlePreviousPage(setLocationPage, locationPage)} disabled={locationPage === 1} />
+                        </PaginationItem>
+                        {[...Array(Math.ceil(processTopCustomerLocations().length / PAGE_SIZE)).keys()].map(page => (
+                          <PaginationItem key={page + 1}>
+                            <PaginationLink onClick={() => setLocationPage(page + 1)} isActive={locationPage === page + 1}>
+                              {page + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+                        <PaginationItem>
+                          <PaginationNext onClick={() => handleNextPage(setLocationPage, locationPage, processTopCustomerLocations(), PAGE_SIZE)} disabled={locationPage === Math.ceil(processTopCustomerLocations().length / PAGE_SIZE)} />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                </div>
               </ChartContainer>
             </CardContent>
           </Card>
@@ -518,51 +540,22 @@ const Analytics = () => {
               <CardTitle>Customer Segmentation</CardTitle>
               <CardDescription>Segmentation based on order frequency</CardDescription>
             </CardHeader>
-            <CardContent className="h-90%">
+            <CardContent className="h-90% ">
               <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={processCustomerSegmentation()} margin={{ left: 12, right: 12 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="segment" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis />
-                    <Tooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="count" fill="var(--color-customers)" radius={4} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="retention" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Retention & Churn</CardTitle>
-              <CardDescription>Customer retention and churn rates over time</CardDescription>
-            </CardHeader>
-            <CardContent className="h-90%">
-              <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={processCustomerChurnRate()} margin={{ left: 12, right: 12 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis />
-                    <Tooltip content={<ChartTooltipContent />} />
-                    <Line dataKey="churn" type="natural" stroke="var(--color-orders)" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-            <CardContent className="h-90%">
-              <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={processCustomerRetentionRate()} margin={{ left: 12, right: 12 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis />
-                    <Tooltip content={<ChartTooltipContent />} />
-                    <Line dataKey="retention" type="natural" stroke="var(--color-customers)" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="flex justify-center ">
+                  <div className="w-full p-2">
+                    <ResponsiveContainer width="100%" height={360}>
+                      <PieChart>
+                        <Pie data={processCustomerSegmentation()} dataKey="count" nameKey="segment" outerRadius={150} fill="var(--color-customers)">
+                          {processCustomerSegmentation().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={pieChartColors[index % pieChartColors.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<ChartTooltipContent />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </ChartContainer>
             </CardContent>
           </Card>

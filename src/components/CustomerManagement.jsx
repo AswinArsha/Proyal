@@ -21,7 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Loader2, User, Mail, Phone, Home, Calendar, Gift } from 'lucide-react';
+import { Loader2, User, Mail, Phone, Home, Calendar, Gift } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -45,7 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, addDays, isSameDay, isWithinInterval } from "date-fns";
 
 const PAGE_SIZE = 10;
 
@@ -88,42 +88,13 @@ const CustomerManagement = () => {
       .ilike("name", `%${search}%`)
       .range(start, end);
 
-    const now = new Date();
-    const startOfWeek = now.getDate() - now.getDay();
-    const endOfWeek = startOfWeek + 6;
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-    if (birthDateFilter) {
-      if (birthDateFilter === "today") {
-        query = query.eq("date_of_birth", format(now, "yyyy-MM-dd"));
-      } else if (birthDateFilter === "this_week") {
-        query = query.gte("date_of_birth", format(new Date(now.setDate(startOfWeek)), "yyyy-MM-dd"))
-          .lte("date_of_birth", format(new Date(now.setDate(endOfWeek)), "yyyy-MM-dd"));
-      } else if (birthDateFilter === "this_month") {
-        query = query.gte("date_of_birth", format(startOfMonth, "yyyy-MM-dd"))
-          .lte("date_of_birth", format(endOfMonth, "yyyy-MM-dd"));
-      }
-    }
-
-    if (anniversaryFilter) {
-      if (anniversaryFilter === "today") {
-        query = query.eq("anniversary", format(now, "yyyy-MM-dd"));
-      } else if (anniversaryFilter === "this_week") {
-        query = query.gte("anniversary", format(new Date(now.setDate(startOfWeek)), "yyyy-MM-dd"))
-          .lte("anniversary", format(new Date(now.setDate(endOfWeek)), "yyyy-MM-dd"));
-      } else if (anniversaryFilter === "this_month") {
-        query = query.gte("anniversary", format(startOfMonth, "yyyy-MM-dd"))
-          .lte("anniversary", format(endOfMonth, "yyyy-MM-dd"));
-      }
-    }
-
     const { data, error, count } = await query;
 
     if (error) {
       console.log("Error fetching customers:", error);
     } else {
-      setCustomers(data);
+      const filteredData = filterByDate(data);
+      setCustomers(filteredData);
       setTotalCustomers(count);
     }
   };
@@ -234,6 +205,45 @@ const CustomerManagement = () => {
     if (page > 0 && page <= Math.ceil(totalCustomers / PAGE_SIZE)) {
       setCurrentCustomerPage(page);
     }
+  };
+
+  const filterByDate = (data) => {
+    if (!birthDateFilter && !anniversaryFilter) return data;
+
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentDay = now.getDate();
+    const weekStart = startOfWeek(now);
+    const weekEnd = endOfWeek(now);
+
+    return data.filter((customer) => {
+      const dob = customer.date_of_birth ? new Date(customer.date_of_birth) : null;
+      const anniversary = customer.anniversary ? new Date(customer.anniversary) : null;
+
+      let match = false;
+
+      if (birthDateFilter) {
+        if (birthDateFilter === "today" && dob) {
+          match = dob.getMonth() + 1 === currentMonth && dob.getDate() === currentDay;
+        } else if (birthDateFilter === "this_week" && dob) {
+          match = isWithinInterval(dob, { start: weekStart, end: weekEnd });
+        } else if (birthDateFilter === "this_month" && dob) {
+          match = dob.getMonth() + 1 === currentMonth;
+        }
+      }
+
+      if (anniversaryFilter) {
+        if (anniversaryFilter === "today" && anniversary) {
+          match = anniversary.getMonth() + 1 === currentMonth && anniversary.getDate() === currentDay;
+        } else if (anniversaryFilter === "this_week" && anniversary) {
+          match = isWithinInterval(anniversary, { start: weekStart, end: weekEnd });
+        } else if (anniversaryFilter === "this_month" && anniversary) {
+          match = anniversary.getMonth() + 1 === currentMonth;
+        }
+      }
+
+      return match;
+    });
   };
 
   return (

@@ -683,7 +683,7 @@ create table public.customers (
 ) tablespace pg_default;
 ```
 
-**Supabase Client:**
+**Supabase :**
 
 ```javascript
 import { createClient } from '@supabase/supabase-js';
