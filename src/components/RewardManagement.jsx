@@ -3,7 +3,7 @@ import { supabase } from '../supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -220,9 +220,14 @@ const RewardManagement = () => {
       }
 
       const totalQuantity = data.reduce((sum, order) => sum + order.quantity, 0) + item.quantity;
+      const previousTotalQuantity = totalQuantity - item.quantity;
 
-      if (totalQuantity >= 10) {
-        itemsReachingMilestone.push(item.name);
+      // Check if the new total quantity crosses a milestone (10, 20, 30, etc.)
+      if (Math.floor(totalQuantity / 10) > Math.floor(previousTotalQuantity / 10)) {
+        itemsReachingMilestone.push({
+          name: item.name,
+          milestone: Math.floor(totalQuantity / 10) * 10
+        });
       }
 
       const { error: insertError } = await supabase.from('orders').insert({
@@ -241,8 +246,10 @@ const RewardManagement = () => {
     showToast('Orders submitted successfully', 'success');
 
     if (itemsReachingMilestone.length > 0) {
-      const foodItemsList = itemsReachingMilestone.map(item => `<span class="text-blue-600 font-semibold">${item}</span>`).join(', ');
-      setRepeatOrderMessage(`Great news! <strong class="text-green-600">${customerName}</strong> has now ordered the following items for the 10th time: ${foodItemsList}`);
+      const foodItemsList = itemsReachingMilestone.map(item => 
+        `<span class="text-blue-600 font-semibold">${item.name}</span> (${item.milestone}th order)`
+      ).join(', ');
+      setRepeatOrderMessage(`Great news! <strong class="text-green-600">${customerName}</strong> has reached a milestone with the following items: ${foodItemsList}`);
       setRepeatOrderDialogOpen(true);
     }
 

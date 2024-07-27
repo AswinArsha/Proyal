@@ -45,8 +45,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format, startOfWeek, endOfWeek, addDays, isSameDay, isWithinInterval } from "date-fns";
 
+import { format, startOfWeek, endOfWeek, isSameDay, isWithinInterval } from 'date-fns';
 const PAGE_SIZE = 10;
 
 const CustomerManagement = () => {
@@ -209,40 +209,43 @@ const CustomerManagement = () => {
 
   const filterByDate = (data) => {
     if (!birthDateFilter && !anniversaryFilter) return data;
-
+  
     const now = new Date();
-    const currentMonth = now.getMonth() + 1;
+    const currentMonth = now.getMonth();
     const currentDay = now.getDate();
     const weekStart = startOfWeek(now);
     const weekEnd = endOfWeek(now);
-
+  
     return data.filter((customer) => {
       const dob = customer.date_of_birth ? new Date(customer.date_of_birth) : null;
       const anniversary = customer.anniversary ? new Date(customer.anniversary) : null;
-
-      let match = false;
-
-      if (birthDateFilter) {
-        if (birthDateFilter === "today" && dob) {
-          match = dob.getMonth() + 1 === currentMonth && dob.getDate() === currentDay;
-        } else if (birthDateFilter === "this_week" && dob) {
-          match = isWithinInterval(dob, { start: weekStart, end: weekEnd });
-        } else if (birthDateFilter === "this_month" && dob) {
-          match = dob.getMonth() + 1 === currentMonth;
+  
+      let matchBirthday = false;
+      let matchAnniversary = false;
+  
+      if (birthDateFilter && dob) {
+        const thisYearBirthday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate());
+        if (birthDateFilter === "today") {
+          matchBirthday = isSameDay(thisYearBirthday, now);
+        } else if (birthDateFilter === "this_week") {
+          matchBirthday = isWithinInterval(thisYearBirthday, { start: weekStart, end: weekEnd });
+        } else if (birthDateFilter === "this_month") {
+          matchBirthday = thisYearBirthday.getMonth() === currentMonth;
         }
       }
-
-      if (anniversaryFilter) {
-        if (anniversaryFilter === "today" && anniversary) {
-          match = anniversary.getMonth() + 1 === currentMonth && anniversary.getDate() === currentDay;
-        } else if (anniversaryFilter === "this_week" && anniversary) {
-          match = isWithinInterval(anniversary, { start: weekStart, end: weekEnd });
-        } else if (anniversaryFilter === "this_month" && anniversary) {
-          match = anniversary.getMonth() + 1 === currentMonth;
+  
+      if (anniversaryFilter && anniversary) {
+        const thisYearAnniversary = new Date(now.getFullYear(), anniversary.getMonth(), anniversary.getDate());
+        if (anniversaryFilter === "today") {
+          matchAnniversary = isSameDay(thisYearAnniversary, now);
+        } else if (anniversaryFilter === "this_week") {
+          matchAnniversary = isWithinInterval(thisYearAnniversary, { start: weekStart, end: weekEnd });
+        } else if (anniversaryFilter === "this_month") {
+          matchAnniversary = thisYearAnniversary.getMonth() === currentMonth;
         }
       }
-
-      return match;
+  
+      return (birthDateFilter && matchBirthday) || (anniversaryFilter && matchAnniversary);
     });
   };
 

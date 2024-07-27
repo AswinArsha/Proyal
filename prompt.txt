@@ -1,1018 +1,534 @@
-"**How to Use Shadcn Charts:**
-
-**Installation:**
-
-Note: If you are using charts with React 19 or Next.js 15, you will need the `recharts@alpha` release.
-
-1. **CLI:**
-   Run the following command to install chart.tsx:
-   ```
-   npx shadcn-ui@latest add chart
-   ```
-
-2. **Manual:**
-   Add the following colors to your CSS file:
-   ```css
-   @layer base {
-     :root {
-       --chart-1: 12 76% 61%;
-       --chart-2: 173 58% 39%;
-       --chart-3: 197 37% 24%;
-       --chart-4: 43 74% 66%;
-       --chart-5: 27 87% 67%;
-     }
-
-     .dark {
-       --chart-1: 220 70% 50%;
-       --chart-2: 160 60% 45%;
-       --chart-3: 30 80% 55%;
-       --chart-4: 280 65% 60%;
-       --chart-5: 340 75% 55%;
-     }
-   }
-   ```
-
-**Your First Chart:**
-
-Let's build your first chart. We'll create a bar chart and add a grid, axis, tooltip, and legend.
-
-1. **Define your data:**
-   ```javascript
-   const chartData = [
-     { month: "January", desktop: 186, mobile: 80 },
-     { month: "February", desktop: 305, mobile: 200 },
-     { month: "March", desktop: 237, mobile: 120 },
-     { month: "April", desktop: 73, mobile: 190 },
-     { month: "May", desktop: 209, mobile: 130 },
-     { month: "June", desktop: 214, mobile: 140 },
-   ];
-   ```
-
-2. **Define your chart config:**
-   ```javascript
-   import { type ChartConfig } from "@/components/ui/chart";
-
-   const chartConfig = {
-     desktop: {
-       label: "Desktop",
-       color: "#2563eb",
-     },
-     mobile: {
-       label: "Mobile",
-       color: "#60a5fa",
-     },
-   } satisfies ChartConfig;
-   ```
-
-3. **Build your chart:**
-   ```javascript
-   "use client";
-
-   import { Bar, BarChart } from "recharts";
-   import { ChartConfig, ChartContainer } from "@/components/ui/chart";
-
-   export function Component() {
-     return (
-       <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-         <BarChart accessibilityLayer data={chartData}>
-           <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-           <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-         </BarChart>
-       </ChartContainer>
-     );
-   }
-   ```
-
-**Add a Grid:**
-
-1. **Import the CartesianGrid component:**
-   ```javascript
-   import { Bar, BarChart, CartesianGrid } from "recharts";
-   ```
-
-2. **Add the CartesianGrid component to your chart:**
-   ```javascript
-   <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-     <BarChart accessibilityLayer data={chartData}>
-       <CartesianGrid vertical={false} />
-       <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-       <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-     </BarChart>
-   </ChartContainer>
-   ```
-
-**Add an Axis:**
-
-1. **Import the XAxis component:**
-   ```javascript
-   import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-   ```
-
-2. **Add the XAxis component to your chart:**
-   ```javascript
-   <ChartContainer config={chartConfig} className="h-[200px] w-full">
-     <BarChart accessibilityLayer data={chartData}>
-       <CartesianGrid vertical={false} />
-       <XAxis
-         dataKey="month"
-         tickLine={false}
-         tickMargin={10}
-         axisLine={false}
-         tickFormatter={(value) => value.slice(0, 3)}
-       />
-       <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-       <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-     </BarChart>
-   </ChartContainer>
-   ```
-
-**Add Tooltip:**
-
-1. **Import the ChartTooltip and ChartTooltipContent components:**
-   ```javascript
-   import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-   ```
-
-2. **Add the components to your chart:**
-   ```javascript
-   <ChartContainer config={chartConfig} className="h-[200px] w-full">
-     <BarChart accessibilityLayer data={chartData}>
-       <CartesianGrid vertical={false} />
-       <XAxis
-         dataKey="month"
-         tickLine={false}
-         tickMargin={10}
-         axisLine={false}
-         tickFormatter={(value) => value.slice(0, 3)}
-       />
-       <ChartTooltip content={<ChartTooltipContent />} />
-       <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-       <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-     </BarChart>
-   </ChartContainer>
-   ```
-
-**Add Legend:**
-
-1. **Import the ChartLegend and ChartLegendContent components:**
-   ```javascript
-   import { ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-   ```
-
-2. **Add the components to your chart:**
-   ```javascript
-   <ChartContainer config={chartConfig} className="h-[200px] w-full">
-     <BarChart accessibilityLayer data={chartData}>
-       <CartesianGrid vertical={false} />
-       <XAxis
-         dataKey="month"
-         tickLine={false}
-         tickMargin={10}
-         axisLine={false}
-         tickFormatter={(value) => value.slice(0, 3)}
-       />
-       <ChartTooltip content={<ChartTooltipContent />} />
-       <ChartLegend content={<ChartLegendContent />} />
-       <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-       <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-     </BarChart>
-   </ChartContainer>
-   ```
-
----
-
-**Shadcn Charts Examples:**
-
-**Area Charts:**
-
-```javascript
-import { TrendingUp } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
-const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-];
-
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig;
-
-export function Component() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Area Chart</CardTitle>
-        <CardDescription>Showing total visitors for the last 6 months</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <AreaChart accessibilityLayer data={chartData} margin={{ left: 12, right: 12 }}>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-            <Area dataKey="desktop" type="natural" fill="var(--color-desktop)" fillOpacity={0.4} stroke="var(--color-desktop)" />
-          </AreaChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="flex items-center gap-2 leading-none text-muted-foreground">
-              January - June 2024
-            </div>
-          </div>
-        </div>
-      </CardFooter>
-    </Card>
-  );
-}
-```
-
-**Bar Charts:**
-
-```javascript
-import { TrendingUp } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
-const chart
-
-Data = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-];
-
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig;
-
-export function Component() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Bar Chart</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <BarChart accessibilityLayer data={chartData}>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} tickFormatter={(value) => value.slice(0, 3)} />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-            <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8} />
-          </BarChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">Showing total visitors for the last 6 months</div>
-      </CardFooter>
-    </Card>
-  );
-}
-```
-
-**Line Charts:**
-
-```javascript
-import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
-const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-];
-
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig;
-
-export function Component() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Line Chart</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <LineChart accessibilityLayer data={chartData} margin={{ left: 12, right: 12 }}>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-            <Line dataKey="desktop" type="natural" stroke="var(--color-desktop)" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">Showing total visitors for the last 6 months</div>
-      </CardFooter>
-    </Card>
-  );
-}
-```
-
-**Pie Charts:**
-
-```javascript
-import { TrendingUp } from "lucide-react";
-import { Pie, PieChart } from "recharts";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 90, fill: "var(--color-other)" },
-];
-
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
-    color: "hsl(var(--chart-1))",
-  },
-  safari: {
-    label: "Safari",
-    color: "hsl(var(--chart-2))",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "hsl(var(--chart-3))",
-  },
-  edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
-  },
-} satisfies ChartConfig;
-
-export function Component() {
-  return (
-    <Card className="flex flex-col">
-      <CardHeader className="items-center pb-0">
-        <CardTitle>Pie Chart - Label</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 pb-0">
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px] pb-0 [&_.recharts-pie-label-text]:fill-foreground">
-          <PieChart>
-            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-            <Pie data={chartData} dataKey="visitors" label nameKey="browser" />
-          </PieChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">Showing total visitors for the last 6 months</div>
-      </CardFooter>
-    </Card>
-  );
-}
-```
-
-**Tooltip:**
-
-```javascript
-import { Bar, BarChart, XAxis } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
-const chartData = [
-  { date: "2024-07-15", running: 450, swimming: 300 },
-  { date: "2024-07-16", running: 380, swimming: 420 },
-  { date: "2024-07-17", running: 520, swimming: 120 },
-  { date: "2024-07-18", running: 140, swimming: 550 },
-  { date: "2024-07-19", running: 600, swimming: 350 },
-  { date: "2024-07-20", running: 480, swimming: 400 },
-];
-
-const chartConfig = {
-  running: {
-    label: "Running",
-    color: "hsl(var(--chart-1))",
-  },
-  swimming: {
-    label: "Swimming",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
-
-export function Component() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Tooltip - Default</CardTitle>
-        <CardDescription>Default tooltip with ChartTooltipContent.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <BarChart accessibilityLayer data={chartData}>
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => {
-                return new Date(value).toLocaleDateString("en-US", { weekday: "short" });
-              }}
-            />
-            <Bar dataKey="running" stackId="a" fill="var(--color-running)" radius={[0, 0, 4, 4]} />
-            <Bar dataKey="swimming" stackId="a" fill="var(--color-swimming)" radius={[4, 4, 0, 0]} />
-            <ChartTooltip content={<ChartTooltipContent />} cursor={false} defaultIndex={1} />
-          </BarChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
-  );
-}
-```
-,
-
-Radar Chart :
-import { TrendingUp } from "lucide-react"
-import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 273 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-]
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig
-export function Component() {
-  return (
-    <Card>
-      <CardHeader className="items-center pb-4">
-        <CardTitle>Radar Chart</CardTitle>
-        <CardDescription>
-          Showing total visitors for the last 6 months
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
-        >
-          <RadarChart data={chartData}>
-            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <PolarAngleAxis dataKey="month" />
-            <PolarGrid />
-            <Radar
-              dataKey="desktop"
-              fill="var(--color-desktop)"
-              fillOpacity={0.6}
-            />
-          </RadarChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="flex items-center gap-2 leading-none text-muted-foreground">
-          January - June 2024
-        </div>
-      </CardFooter>
-    </Card>
-  )
-}
-,
-Radial Chart :
-import { TrendingUp } from "lucide-react"
-import { RadialBar, RadialBarChart } from "recharts"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 90, fill: "var(--color-other)" },
-]
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
-    color: "hsl(var(--chart-1))",
-  },
-  safari: {
-    label: "Safari",
-    color: "hsl(var(--chart-2))",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "hsl(var(--chart-3))",
-  },
-  edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
-  },
-} satisfies ChartConfig
-export function Component() {
-  return (
-    <Card className="flex flex-col">
-      <CardHeader className="items-center pb-0">
-        <CardTitle>Radial Chart</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
-        >
-          <RadialBarChart data={chartData} innerRadius={30} outerRadius={110}>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel nameKey="browser" />}
-            />
-            <RadialBar dataKey="visitors" background />
-          </RadialBarChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
-    </Card>
-  )
-}
-
-,
-**Skeleton:**
-
-Use this to show a placeholder while content is loading.
-```javascript
-import { Skeleton } from "@/components/ui/skeleton";
-
-export function SkeletonDemo() {
-  return (
-    <div className="flex items-center space-x-4">
-
-
-      <Skeleton className="h-12 w-12 rounded-full" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[200px]" />
-      </div>
-    </div>
-  );
-}
-```
-,
-
-**Supabase Tables:**
-
-```sql
-create table public.orders (
-  id serial,
-  customer_id integer null,
-  food_item text not null,
-  quantity integer not null,
-  order_date timestamp without time zone not null default now(),
-  food_code text not null,
-  constraint orders_pkey primary key (id),
-  constraint orders_customer_id_fkey foreign key (customer_id) references customers (id)
-) tablespace pg_default;
-
-create table public.food_items (
-  id serial,
-  name text not null,
-  code text not null,
-  constraint food_items_pkey primary key (id),
-  constraint unique_food_code unique (code)
-) tablespace pg_default;
-
-create table public.customers (
-  id serial,
-  name text not null,
-  email text not null,
-  phone text not null,
-  address text not null,
-  date_of_birth date null,
-  anniversary date null,
-  customer_code integer null default nextval('customer_code_seq'::regclass),
-  constraint customers_pkey primary key (id),
-  constraint customers_customer_code_key unique (customer_code)
-) tablespace pg_default;
-```
-
-**Supabase :**
-
-```javascript
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = 'https://your-supabase-url';
-const supabaseKey = 'your-supabase-key';
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
-```
-
-**Analytics.jsx:**
-
-```javascript
-import React, { useState, useEffect } from 'react';
-import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip
-} from 'recharts';
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle
-} from '@/components/ui/card';
-import {
-  Tabs, TabsContent, TabsList, TabsTrigger
-} from '@/components/ui/tabs';
-import { supabase } from '../supabase'; // Adjust the import path as needed
-import {
-  ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent
-} from '@/components/ui/chart';
-import { TrendingUp, Users, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-
-const PAGE_SIZE = 10;
-
-const Analytics = () => {
-  const [customerData, setCustomerData] = useState([]);
-  const [orderData, setOrderData] = useState([]);
-  const [foodItemData, setFoodItemData] = useState([]);
-  const [loading, setLoading] = useState(true);
+import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../supabase';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const RewardManagement = () => {
+  const [customerId, setCustomerId] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [foodItems, setFoodItems] = useState([{ code: '', name: '', quantity: 1 }, { code: '', name: '', quantity: 1 }, { code: '', name: '', quantity: 1 }]);
+  const [isAddCustomerDialogOpen, setIsAddCustomerDialogOpen] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '', address: '', date_of_birth: '', anniversary: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [customerSearchResults, setCustomerSearchResults] = useState([]);
+  const [foodSearchResults, setFoodSearchResults] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(null);
+  const [searchField, setSearchField] = useState('');
+  const [repeatOrderDialogOpen, setRepeatOrderDialogOpen] = useState(false);
+  const [repeatOrderMessage, setRepeatOrderMessage] = useState('');
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (customerId) {
+      fetchCustomerName(customerId);
+    }
+  }, [customerId]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [customersResponse, ordersResponse, foodItemsResponse] = await Promise.all([
-        supabase.from('customers').select('*'),
-        supabase.from('orders').select('*'),
-        supabase.from('food_items').select('*')
-      ]);
-
-      setCustomerData(customersResponse.data || []);
-      setOrderData(ordersResponse.data || []);
-      setFoodItemData(foodItemsResponse.data || []);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
+  const fetchCustomerName = async (id) => {
+    setIsLoading(true);
+    const { data, error } = await supabase.from('customers').select('name').eq('customer_code', id).single();
+    setIsLoading(false);
+    if (error) {
+      console.log('Error fetching customer name:', error);
+      setCustomerName('');
+    } else {
+      setCustomerName(data ? data.name : '');
     }
   };
 
-  const processCustomerGrowth = () => {
-    return customerData.map((customer, index) => ({
-      date: new Date(customer.created_at).toLocaleDateString(),
-      customers: index + 1
-    })).slice(-30); // Last 30 days
+  const handleCustomerCodeChange = async (value) => {
+    setSearchField('customer_code');
+    setCustomerId(value);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchCustomers(value, 'customer_code');
+    }, 300);
   };
 
-  const processOrderTrends = () => {
-    const orderCounts = orderData.reduce((acc, order) => {
-      const date = new Date(order.order_date).toLocaleDateString();
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
-    }, {});
+  const handleCustomerNameChange = async (value) => {
+    setSearchField('customer_name');
+    setCustomerName(value);
 
-    return Object.entries(orderCounts).map(([date, count]) => ({ date, orders: count })).slice(-30); // Last 30 days
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchCustomers(value, 'name');
+    }, 300);
   };
 
-  const processPopularItems = () => {
-    const itemCounts = orderData.reduce((acc, order) => {
-      acc[order.food_item] = (acc[order.food_item] || 0) + order.quantity;
-      return acc;
-    }, {});
+  const handleFoodCodeChange = async (index, value) => {
+    setActiveIndex(index);
+    setSearchField('code');
+    const newFoodItems = [...foodItems];
+    newFoodItems[index].code = value;
+    setFoodItems(newFoodItems);
 
-    return Object.entries(itemCounts)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5); // Top 5 items
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchFoodItems(value, 'code');
+    }, 300);
   };
 
-  const StatCard = ({ title, value, icon: Icon, trend }) => (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className={`text-xs ${trend > 0 ? 'text-green-500' : 'text-red-500'} flex items-center`}>
-          {trend > 0 ? <ArrowUpRight className="mr-1 h-4 w-4" /> : <ArrowDownRight className="mr-1 h-4 w-4" />}
-          {Math.abs(trend)}% from last month
-        </p>
-      </CardContent>
-    </Card>
-  );
+  const handleFoodNameChange = async (index, value) => {
+    setActiveIndex(index);
+    setSearchField('name');
+    const newFoodItems = [...foodItems];
+    newFoodItems[index].name = value;
+    setFoodItems(newFoodItems);
 
-  if (loading) {
-    return <div>Loading analytics...</div>;
-  }
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-  const chartConfig = {
-    customers: {
-      label: "Customers",
-      color: "hsl(var(--chart-1))",
-    },
-    orders: {
-      label: "Orders",
-      color: "hsl(var(--chart-2))",
-    },
-    foodItems: {
-      label: "Food Items",
-      color: "hsl(var(--chart-3))",
-    },
-    revenue: {
-      label: "Revenue",
-      color: "hsl(var(--chart-4))",
-    },
+    searchTimeoutRef.current = setTimeout(() => {
+      searchFoodItems(value, 'name');
+    }, 300);
+  };
+
+  const handleQuantityChange = (index, value) => {
+    const newFoodItems = [...foodItems];
+    newFoodItems[index].quantity = value;
+    setFoodItems(newFoodItems);
+  };
+
+  const searchCustomers = async (query, field) => {
+    if (query.length >= 1) {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('customer_code, name')
+        .ilike(field, `${query}%`)
+        .order(field, { ascending: true })
+        .limit(10);
+
+      setIsLoading(false);
+      if (error) {
+        console.log('Error fetching customers:', error);
+        setCustomerSearchResults([]);
+      } else {
+        setCustomerSearchResults(data);
+      }
+    } else {
+      setCustomerSearchResults([]);
+    }
+  };
+
+  const searchFoodItems = async (query, field) => {
+    if (query.length >= 1) {
+      setIsLoading(true);
+      let searchQuery;
+      if (field === 'code') {
+        searchQuery = supabase
+          .from('food_items')
+          .select('code, name')
+          .ilike('code', `${query}%`)
+          .order('code', { ascending: true });
+      } else {
+        searchQuery = supabase
+          .from('food_items')
+          .select('code, name')
+          .ilike('name', `${query}%`)
+          .order('name', { ascending: true });
+      }
+
+      const { data, error } = await searchQuery.limit(10);
+
+      setIsLoading(false);
+      if (error) {
+        console.log('Error fetching food items:', error);
+        setFoodSearchResults([]);
+      } else {
+        setFoodSearchResults(data);
+      }
+    } else {
+      setFoodSearchResults([]);
+    }
+  };
+
+  const selectCustomer = (customer) => {
+    setCustomerId(customer.customer_code);
+    setCustomerName(customer.name);
+    setCustomerSearchResults([]);
+  };
+
+  const selectFoodItem = (item, index) => {
+    const newFoodItems = [...foodItems];
+    newFoodItems[index] = { code: item.code, name: item.name, quantity: newFoodItems[index].quantity };
+    setFoodItems(newFoodItems);
+    setFoodSearchResults([]);
+    setActiveIndex(null);
+  };
+
+  const addFoodInput = () => {
+    setFoodItems([...foodItems, { code: '', name: '', quantity: 1 }]);
+  };
+
+  const handleAddCustomer = async () => {
+    setIsLoading(true);
+    const { error } = await supabase.from('customers').insert([newCustomer]);
+    setIsLoading(false);
+    if (error) {
+      console.log('Error adding customer:', error);
+      showToast('Error adding customer', 'error');
+    } else {
+      setNewCustomer({ name: '', email: '', phone: '', address: '', date_of_birth: '', anniversary: '' });
+      setIsAddCustomerDialogOpen(false);
+      showToast('Customer added successfully', 'success');
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    const { data: customerData, error: customerError } = await supabase.from('customers').select('id').eq('customer_code', customerId).single();
+
+    if (customerError || !customerData) {
+      showToast('Customer ID not found', 'error');
+      setIsLoading(false);
+      return;
+    }
+
+    const customerID = customerData.id;
+
+    const filteredFoodItems = foodItems.filter(item => item.code && item.name);
+    const itemsReachingMilestone = [];
+
+    for (const item of filteredFoodItems) {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('quantity')
+        .eq('customer_id', customerID)
+        .eq('food_item', item.name);
+
+      if (error) {
+        console.log('Error checking order history:', error);
+        continue;
+      }
+
+      const totalQuantity = data.reduce((sum, order) => sum + order.quantity, 0) + item.quantity;
+
+      if (totalQuantity >= 10) {
+        itemsReachingMilestone.push(item.name);
+      }
+
+      const { error: insertError } = await supabase.from('orders').insert({
+        customer_id: customerID,
+        food_item: item.name,
+        food_code: item.code,
+        quantity: item.quantity
+      });
+
+      if (insertError) {
+        console.log('Error adding order:', insertError);
+      }
+    }
+
+    setIsLoading(false);
+    showToast('Orders submitted successfully', 'success');
+
+    if (itemsReachingMilestone.length > 0) {
+      const foodItemsList = itemsReachingMilestone.map(item => `<span class="text-blue-600 font-semibold">${item}</span>`).join(', ');
+      setRepeatOrderMessage(`Great news! <strong class="text-green-600">${customerName}</strong> has now ordered the following items for the 10th time: ${foodItemsList}`);
+      setRepeatOrderDialogOpen(true);
+    }
+
+    clearForm();
+  };
+
+  const clearForm = () => {
+    setCustomerId('');
+    setCustomerName('');
+    setFoodItems([{ code: '', name: '', quantity: 1 }, { code: '', name: '', quantity: 1 }, { code: '', name: '', quantity: 1 }]);
+  };
+
+  const showToast = (message, type) => {
+    toast[type](message);
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
+    <Card className="bg-white rounded-lg max-w-3xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Reward Management</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="relative flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <Input
+            type="text"
+            placeholder="Customer Code"
+            value={customerId}
+            onChange={(e) => handleCustomerCodeChange(e.target.value)}
+            className="w-full sm:w-1/2"
+          />
+          <div className="relative w-full sm:w-1/2">
+            <Input
+              type="text"
+              placeholder="Customer Name"
+              value={customerName}
+              onChange={(e) => handleCustomerNameChange(e.target.value)}
+              className="w-full"
+            />
+            {!customerName && (
+              <Button 
+                onClick={() => setIsAddCustomerDialogOpen(true)} 
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 hover:bg-blue-400 text-white rounded-full w-8 h-8 flex items-center justify-center"
+              >
+                +
+              </Button>
+            )}
+            {customerSearchResults.length > 0 && (
+              <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 left-0 top-full">
+                {customerSearchResults.map((result) => (
+                  <div
+                    key={result.customer_code}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between"
+                    onClick={() => selectCustomer(result)}
+                  >
+                    <span>{result.customer_code}</span>
+                    <span>{result.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {foodItems.map((item, index) => (
+          <div key={index} className="relative flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="w-full sm:w-1/3 relative">
+              <Input
+                type="text"
+                placeholder="Food Code"
+                value={item.code}
+                onChange={(e) => handleFoodCodeChange(index, e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <div className="w-full sm:w-1/3 relative">
+              <Input
+                type="text"
+                placeholder="Food Name"
+                value={item.name}
+                onChange={(e) => handleFoodNameChange(index, e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <div className="w-full sm:w-1/3 relative">
+              <Input
+                type="number"
+                placeholder="Quantity"
+                value={item.quantity}
+                onChange={(e) => handleQuantityChange(index, e.target.value)}
+                className="w-full"
+              />
+            </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Customers" value={customerData.length} icon={Users} trend={5.2} />
-        <StatCard title="Total Orders" value={orderData.length} icon={ShoppingCart} trend={-2.1} />
-        <StatCard title="Total Revenue" value={`$${orderData.reduce((sum, order) => sum + order.quantity * 10, 0)}`} icon={DollarSign} trend={10.5} />
-        <StatCard title="Menu Items" value={foodItemData.length} icon={TrendingUp} trend={3.2} />
-      </div>
+            {activeIndex === index && foodSearchResults.length > 0 && (
+              <div className="absolute z-10 w-full sm:w-[calc(200% + 1rem)] bg-white border border-gray-300 rounded-md shadow-lg mt-1 left-0 top-full -translate-x-4 translate-y-2">
+                {foodSearchResults.map((result) => (
+                  <div
+                    key={result.code}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between"
+                    onClick={() => selectFoodItem(result, index)}
+                  >
+                    <span>{result.code}</span>
+                    <span>{result.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+        
+        <div className="flex justify-between">
+          <Button onClick={addFoodInput} className="bg-green-500 hover:bg-green-400 text-white">
+            Add Food Item
+          </Button>
+          <Button onClick={handleSubmit} className="bg-emerald-500 hover:bg-emerald-400 text-white" disabled={isLoading}>
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Submit
+          </Button>
+        </div>
+      </CardContent>
 
-      <Tabs defaultValue="growth" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="growth">Customer Growth</TabsTrigger>
-          <TabsTrigger value="orders">Order Trends</TabsTrigger>
-          <TabsTrigger value="items">Popular Items</TabsTrigger>
-        </TabsList>
-        <TabsContent value="growth" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Growth</CardTitle>
-              <CardDescription>New customers over time</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <ChartContainer config={chartConfig}>
-                <LineChart
-                  accessibilityLayer
-                  data={processCustomerGrowth()}
-                  margin={{ left: 12, right: 12 }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                  <YAxis />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                  <Line dataKey="customers" type="natural" stroke="var(--color-customers)" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="orders" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Trends</CardTitle>
-              <CardDescription>Orders over time</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <ChartContainer config={chartConfig}>
-                <BarChart accessibilityLayer data={processOrderTrends()} margin={{ left: 12, right: 12 }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                  <YAxis />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                  <Bar dataKey="orders" fill="var(--color-orders)" radius={4} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="items" className="space-y-4">
-          <Card>
+      <Dialog open={isAddCustomerDialogOpen} onOpenChange={setIsAddCustomerDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add Customer</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={newCustomer.name}
+                onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={newCustomer.email}
+                onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="phone" className="text-right">
+                Phone
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={newCustomer.phone}
+                onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="address" className="text-right">
+                Address
+              </Label>
+              <Input
+                id="address"
+                value={newCustomer.address}
+                onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="date_of_birth" className="text-right">
+                Date of Birth
+              </Label>
+              <Input
+                id="date_of_birth"
+                type="date"
+                value={newCustomer.date_of_birth}
+                onChange={(e) => setNewCustomer({ ...newCustomer, date_of_birth: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="anniversary" className="text-right">
+                Anniversary
+              </Label>
+              <Input
+                id="anniversary"
+                type="date"
+                value={newCustomer.anniversary}
+                onChange={(e) => setNewCustomer({ ...newCustomer, anniversary: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsAddCustomerDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleAddCustomer} disabled={isLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Add
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
+      <Dialog open={repeatOrderDialogOpen} onOpenChange={setRepeatOrderDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Reward Notification</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p dangerouslySetInnerHTML={{ __html: repeatOrderMessage }} />
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setRepeatOrderDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-            <CardHeader>
-              <CardTitle>Popular Items</CardTitle>
-              <CardDescription>Most ordered food items</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <ChartContainer config={chartConfig}>
-                <PieChart accessibilityLayer data={processPopularItems()} margin={{ left: 12, right: 12 }}>
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                  <Pie dataKey="value" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} />
-                </PieChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+      <ToastContainer />
+    </Card>
   );
 };
 
-export default Analytics;
-```
+export default RewardManagement;
 ,
-The charts provided above from the Shadcn documentation include various types and themes. Please select the necessary charts for my Analytics section from the examples, ensuring they support real-time data fetching from my Supabase tables.
+ SUPABASE TABLES :
+create table
+  public.customers (
+    id serial,
+    name text not null,
+    email text not null,
+    phone text not null,
+    address text not null,
+    date_of_birth date null,
+    anniversary date null,
+    customer_code integer null default nextval('customer_code_seq'::regclass),
+    created_at timestamp without time zone not null default current_timestamp,
+    constraint customers_pkey primary key (id),
+    constraint customers_customer_code_key unique (customer_code)
+  ) tablespace pg_default;
+,
+create table
+  public.food_items (
+    id serial,
+    name text not null,
+    code text not null,
+    constraint food_items_pkey primary key (id),
+    constraint food_items_code_key unique (code)
+  ) tablespace pg_default;
+,
+create table
+  public.orders (
+    id serial,
+    customer_id integer null,
+    food_item text not null,
+    quantity integer not null,
+    order_date timestamp without time zone not null default current_timestamp,
+    food_code text not null,
+    constraint orders_pkey primary key (id),
+    constraint orders_customer_id_fkey foreign key (customer_id) references customers (id)
+  ) tablespace pg_default;
+  ,
+Improve the reward management system so that the reward dialog only appears at specific order milestones. The reward dialog should be displayed only when a customer places an order that reaches the next milestone (e.g., 10th, 20th, 30th order).
 
-Additionally, I have listed the new analytics features I need to add and a complete redesign of the UI for the charts and overall sections to enhance the current UI of Analytics.jsx, which is built using React, Tailwind CSS, Supabase, and Shadcn to make the analytics section look modern and user-friendly.
+### Requirements
 
-### New Analytics Features to Add
+1. The reward dialog should be shown only when a customer reaches a new milestone:
+    - For example, if a customer orders for the 10th time, show the reward dialog.
+    - If the customer has already ordered 15 times and orders again, the dialog should not be shown.
+    - When the customer reaches the 20th order, show the reward dialog again.
+  
+2. The system should check the total number of orders placed by the customer and determine if the current order reaches a milestone.
+  
+3. Provide an example:
+    - If a customer has ordered 29 times and places one more order (making it the 30th order), the reward dialog should appear.
+    - If a customer has ordered 35 times and places an order, the dialog should not appear until the 40th order.
 
-1. **Customer Analytics:**
-   - **Total number of customers:** Already included.
-   - **New customers added over time (e.g., per month or per year):** Add a line chart to show the growth trend.
-   - **Most common customer locations/addresses:** Add a bar chart or pie chart to display the distribution of customer locations.
-   - **Customer retention rate:** Add a line chart to show the retention rate over time.
+4. Ensure the changes are implemented in the reward management section, where the employee inputs the food item and submits it.
 
-2. **Order Analytics:**
-   - **Total number of orders:** Already included.
-   - **Total quantity of food items ordered:** Add a line chart to show the total quantity ordered over time.
-   - **Orders over time (e.g., daily, weekly, monthly trends):** Already included.
-   - **Most frequently ordered food items:** Already included.
-   - **Order frequency per customer:** Add a bar chart to display the frequency distribution.
 
-3. **Food Item Analytics:**
-   - **Most popular food items (based on the number of orders):** Already included.
-   - **Least popular food items:** Add a bar chart or pie chart to display the least popular items.
 
-4. **Revenue Analytics:**
-   - **Total revenue (if prices are available and can be integrated):** Already included.
-   - **Revenue over time (e.g., daily, weekly, monthly):** Add a line chart to show revenue trends.
-   - **Average revenue per customer:** Add a bar chart to display the average revenue per customer.
-
-5. **Customer Segmentation:**
-   - **Segmentation of customers based on order frequency:** Add a pie chart or bar chart to show segmentation.
-   - **High-value customers (based on order quantity or frequency):** Add a bar chart to highlight high-value customers.
-
-6. **Retention and Churn Analysis:**
-   - **Customer churn rate (percentage of customers who have stopped ordering):** Add a line chart to show churn rate over time.
-   - **Retention rate (percentage of customers who continue to place orders over time):** Already included.
-
-### UI/UX Improvements for Analytics Section
-
-1. **Layout:**
-   - **Dashboard Overview Section:**
-     - Place a grid of statistic cards at the top for key metrics such as total customers, total orders, total revenue, and total menu items.
-   - **Tabs Section:**
-     - Use tabs to categorize different types of analytics: "Customer Growth," "Order Trends," "Popular Items," "Revenue Trends," "Customer Segmentation," and "Retention & Churn."
-
-2. **Charts:**
-   - **Customer Growth:**
-     - Line Chart showing the number of new customers added over time.
-   - **Order Trends:**
-     - Bar Chart showing the total number of orders over time.
-     - Line Chart showing the total quantity of food items ordered over time.
-   - **Popular Items:**
-     - Pie Chart showing the most popular food items.
-     - Bar Chart showing the least popular food items.
-   - **Revenue Trends:**
-     - Line Chart showing the total revenue over time.
-     - Bar Chart showing the average revenue per customer.
-   - **Customer Segmentation:**
-     - Pie Chart showing customer segmentation based on order frequency.
-     - Bar Chart highlighting high-value customers.
-   - **Retention & Churn:**
-     - Line Chart showing the customer churn rate over time.
-     - Line Chart showing the customer retention rate over time.
-
-3. **Additional UI Elements:**
-   - **Datepicker:**
-     - Add React Datepicker components for filtering data by date range.
-   - **Icons:**
-     - Use Lucide React icons for better visual representation and quick recognition of different metrics.
-   - **Skeleton Loader:**
-     - Add Shadcn Skeleton components to show loading states for the charts and data tables.
-
-### Suggested UI Redesign
-
-1. **Dashboard Overview Section:**
-   - Display four statistic cards at the top, each representing a key metric. Use icons from Lucide React for visual appeal.
-   - Example:
-     - Total Customers (icon: Users)
-     - Total Orders (icon: ShoppingCart)
-     - Total Revenue (icon: DollarSign)
-     - Menu Items (icon: TrendingUp)
-
-2. **Tabs Section:**
-   - Create tabs to switch between different analytics categories. Use Tabs from Shadcn UI.
-   - Example:
-     - Customer Growth
-     - Order Trends
-     - Popular Items
-     - Revenue Trends
-     - Customer Segmentation
-     - Retention & Churn
-
-3. **Charts Layout:**
-   - **Customer Growth Tab:**
-     - Display a Line Chart showing new customers added over time.
-   - **Order Trends Tab:**
-     - Display a Bar Chart showing total orders over time.
-     - Display a Line Chart showing total quantity ordered over time.
-   - **Popular Items Tab:**
-     - Display a Pie Chart for the most popular items.
-     - Display a Bar Chart for the least popular items.
-   - **Revenue Trends Tab:**
-     - Display a Line Chart for total revenue over time.
-     - Display a Bar Chart for average revenue per customer.
-   - **Customer Segmentation Tab:**
-     - Display a Pie Chart for customer segmentation.
-     - Display a Bar Chart for high-value customers.
-   - **Retention & Churn Tab:**
-     - Display a Line Chart for customer churn rate.
-     - Display a Line Chart for customer retention rate.
-
-4. **Datepicker:**
-   - Add a Datepicker at the top of each tab for filtering data by date range. This allows users to view analytics for specific periods using React Datepicker.
-
-5. **Loading State:**
-   - Add Skeleton loaders to each chart and table to indicate loading states while data is being fetched using Shadcn Skeleton.
-
-These suggestions will help you create a comprehensive and visually appealing analytics dashboard that provides valuable insights into customer behavior, sales performance, and business trends.
-
-,Can you provide the fully updated code for Analytics.jsx file based on the Shadcn chart examples and the new analytics features and UI/UX improvements I mentioned
