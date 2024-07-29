@@ -24,6 +24,8 @@ const RewardManagement = () => {
   const [repeatOrderMessage, setRepeatOrderMessage] = useState('');
   const searchTimeoutRef = useRef(null);
 
+  const orderMilestones = [10, 20, 30]; // Define order milestones here
+
   useEffect(() => {
     if (customerId) {
       fetchCustomerName(customerId);
@@ -221,7 +223,7 @@ const RewardManagement = () => {
 
       const totalQuantity = data.reduce((sum, order) => sum + order.quantity, 0) + item.quantity;
 
-      if (totalQuantity >= 10) {
+      if (orderMilestones.includes(totalQuantity)) {
         itemsReachingMilestone.push(item.name);
       }
 
@@ -475,6 +477,7 @@ const RewardManagement = () => {
 };
 
 export default RewardManagement;
+
 ,
  SUPABASE TABLES :
 create table
@@ -513,22 +516,286 @@ create table
     constraint orders_customer_id_fkey foreign key (customer_id) references customers (id)
   ) tablespace pg_default;
   ,
-Improve the reward management system so that the reward dialog only appears at specific order milestones. The reward dialog should be displayed only when a customer places an order that reaches the next milestone (e.g., 10th, 20th, 30th order).
 
-### Requirements
+ ### Instruction
+You are a developer working on a Reward Management system for a restaurant's customer loyalty program. The system is built using React, Supabase, Tailwind, and Shadcn. The goal is to display a reward dialog to employees when customers reach specific milestones for ordering the same food item. The milestones are every 10 orders (e.g., 10, 20, 30 orders).
 
-1. The reward dialog should be shown only when a customer reaches a new milestone:
-    - For example, if a customer orders for the 10th time, show the reward dialog.
-    - If the customer has already ordered 15 times and orders again, the dialog should not be shown.
-    - When the customer reaches the 20th order, show the reward dialog again.
+### Context
+Currently, the system shows the reward dialog correctly at the 10th order. However, it continues to show the reward dialog for subsequent orders without hitting the next milestone (20th, 30th orders, etc.). This is causing confusion as the reward dialog should only appear when the customer reaches the next milestone.
+
+### Example
+**Scenario 1**: Customer A orders Food A for the 10th time, and the reward dialog appears correctly. If Customer A orders Food A again (11th, 12th time, etc.), the reward dialog should not appear until they reach the 20th order.
+
+**Scenario 2**: Customer B has ordered Food B 34 times previously and then orders it 8 more times, making it 42 orders in total. The reward dialog should only appear when Customer B reaches the 40th order.
+
+**Scenario 3**: Customer C has ordered Food C 78 times previously and then orders it 1 more time, making it 79 orders in total. The reward dialog should not appear as they have not reached the 80th order.
+
+### Question
+How can I modify the system to track these milestones correctly using a Supabase database table?
+
+
+SOLUTIONS :
+
+ we need to modify our database structure and update our order submission logic. Here's a step-by-step approach to implement this feature:
+
+1. First, let's create a new Supabase table to track the order count for each customer-food item combination:
+
+
+
+```sql
+CREATE TABLE public.customer_food_counts (
+  id SERIAL PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES public.customers(id),
+  food_item TEXT NOT NULL,
+  total_count INTEGER NOT NULL DEFAULT 0,
+  last_milestone INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(customer_id, food_item)
+);
+
+```
+
+This table will keep track of the total count of each food item ordered by a customer and the last milestone reached.
+
+2. Now, let's modify the `handleSubmit` function in the React component to update this new table and check for milestones:
+
+
+
+```javascript
+const handleSubmit = async () => {
+  setIsLoading(true);
+  const { data: customerData, error: customerError } = await supabase
+    .from('customers')
+    .select('id')
+    .eq('customer_code', customerId)
+    .single();
+
+  if (customerError || !customerData) {
+    showToast('Customer ID not found', 'error');
+    setIsLoading(false);
+    return;
+  }
+
+  const customerID = customerData.id;
+  const filteredFoodItems = foodItems.filter(item => item.code && item.name);
+  const itemsReachingMilestone = [];
+
+  for (const item of filteredFoodItems) {
+    // Update the order count and check for milestone
+    const { data, error } = await supabase.rpc('update_food_count_and_check_milestone', {
+      p_customer_id: customerID,
+      p_food_item: item.name,
+      p_quantity: item.quantity
+    });
+
+    if (error) {
+      console.log('Error updating food count:', error);
+      continue;
+    }
+
+    if (data.milestone_reached) {
+      itemsReachingMilestone.push({
+        name: item.name,
+        milestone: data.new_milestone
+      });
+    }
+
+    // Insert the new order
+    const { error: insertError } = await supabase.from('orders').insert({
+      customer_id: customerID,
+      food_item: item.name,
+      food_code: item.code,
+      quantity: item.quantity
+    });
+
+    if (insertError) {
+      console.log('Error adding order:', insertError);
+    }
+  }
+
+  setIsLoading(false);
+  showToast('Orders submitted successfully', 'success');
+
+  if (itemsReachingMilestone.length > 0) {
+    const milestoneMessages = itemsReachingMilestone.map(item => 
+      `<span class="text-blue-600 font-semibold">${item.name}</span> (${item.milestone}th order)`
+    ).join(', ');
+    setRepeatOrderMessage(`Great news! <strong class="text-green-600">${customerName}</strong> has reached a milestone for: ${milestoneMessages}`);
+    setRepeatOrderDialogOpen(true);
+  }
+
+  clearForm();
+};
+
+```
+
+3. We need to create a Supabase function (RPC) to handle the update and milestone check atomically:
+
+
+
+```sql
+CREATE OR REPLACE FUNCTION update_food_count_and_check_milestone(
+  p_customer_id INTEGER,
+  p_food_item TEXT,
+  p_quantity INTEGER
+) RETURNS TABLE (milestone_reached BOOLEAN, new_milestone INTEGER) AS $$
+DECLARE
+  v_total_count INTEGER;
+  v_last_milestone INTEGER;
+  v_new_milestone INTEGER;
+BEGIN
+  -- Insert or update the customer_food_counts table
+  INSERT INTO customer_food_counts (customer_id, food_item, total_count, last_milestone)
+  VALUES (p_customer_id, p_food_item, p_quantity, 0)
+  ON CONFLICT (customer_id, food_item) DO UPDATE
+  SET total_count = customer_food_counts.total_count + p_quantity
+  RETURNING total_count, last_milestone INTO v_total_count, v_last_milestone;
+
+  -- Check if a new milestone has been reached
+  v_new_milestone := (v_total_count / 10) * 10;
   
-2. The system should check the total number of orders placed by the customer and determine if the current order reaches a milestone.
-  
-3. Provide an example:
-    - If a customer has ordered 29 times and places one more order (making it the 30th order), the reward dialog should appear.
-    - If a customer has ordered 35 times and places an order, the dialog should not appear until the 40th order.
+  IF v_new_milestone > v_last_milestone THEN
+    -- Update the last_milestone in the table
+    UPDATE customer_food_counts
+    SET last_milestone = v_new_milestone
+    WHERE customer_id = p_customer_id AND food_item = p_food_item;
+    
+    RETURN QUERY SELECT TRUE AS milestone_reached, v_new_milestone AS new_milestone;
+  ELSE
+    RETURN QUERY SELECT FALSE AS milestone_reached, v_new_milestone AS new_milestone;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
 
-4. Ensure the changes are implemented in the reward management section, where the employee inputs the food item and submits it.
+```
+
+These changes will ensure that:
+
+1. We keep track of the total count of each food item ordered by a customer.
+2. We only show the reward dialog when a new milestone (every 10th order) is reached.
+3. The milestone check is done atomically in the database, preventing race conditions.
 
 
 
+. We need to make some modifications to RewardManagement.jsx to incorporate the new logic and ensure everything works correctly with our updated milestone tracking system. Let's go through the necessary changes:
+
+
+
+```javascript
+import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../supabase';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const RewardManagement = () => {
+  // ... (keep all the existing state variables)
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    const { data: customerData, error: customerError } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('customer_code', customerId)
+      .single();
+
+    if (customerError || !customerData) {
+      showToast('Customer ID not found', 'error');
+      setIsLoading(false);
+      return;
+    }
+
+    const customerID = customerData.id;
+    const filteredFoodItems = foodItems.filter(item => item.code && item.name);
+    const itemsReachingMilestone = [];
+
+    for (const item of filteredFoodItems) {
+      // Update the order count and check for milestone
+      const { data, error } = await supabase.rpc('update_food_count_and_check_milestone', {
+        p_customer_id: customerID,
+        p_food_item: item.name,
+        p_quantity: parseInt(item.quantity)
+      });
+
+      if (error) {
+        console.log('Error updating food count:', error);
+        continue;
+      }
+
+      if (data && data.length > 0 && data[0].milestone_reached) {
+        itemsReachingMilestone.push({
+          name: item.name,
+          milestone: data[0].new_milestone
+        });
+      }
+
+      // Insert the new order
+      const { error: insertError } = await supabase.from('orders').insert({
+        customer_id: customerID,
+        food_item: item.name,
+        food_code: item.code,
+        quantity: parseInt(item.quantity)
+      });
+
+      if (insertError) {
+        console.log('Error adding order:', insertError);
+      }
+    }
+
+    setIsLoading(false);
+    showToast('Orders submitted successfully', 'success');
+
+    if (itemsReachingMilestone.length > 0) {
+      const milestoneMessages = itemsReachingMilestone.map(item => 
+        `<span class="text-blue-600 font-semibold">${item.name}</span> (${item.milestone}th order)`
+      ).join(', ');
+      setRepeatOrderMessage(`Great news! <strong class="text-green-600">${customerName}</strong> has reached a milestone for: ${milestoneMessages}`);
+      setRepeatOrderDialogOpen(true);
+    }
+
+    clearForm();
+  };
+
+  // ... (keep all other functions and JSX as they are)
+
+  return (
+    // ... (keep the existing JSX structure)
+  );
+};
+
+export default RewardManagement;
+
+```
+
+Here are the key changes made to the RewardManagement.jsx file:
+
+1. We've updated the `handleSubmit` function to use the new `update_food_count_and_check_milestone` RPC function we created in Supabase.
+
+2. We're now checking for milestones reached for each food item individually, which allows us to track multiple milestones in a single order if necessary.
+
+3. We've modified the milestone message to include the specific milestone reached for each food item (e.g., 10th order, 20th order, etc.).
+
+4. We've added error handling for the RPC call to ensure smooth operation even if there's an issue with updating the food count.
+
+5. We're using `parseInt()` for quantity values to ensure we're passing integers to our Supabase function and order insertion.
+
+These changes ensure that:
+
+1. The reward system now accurately tracks milestones for each food item ordered by a customer.
+2. The reward dialog only appears when a new milestone (every 10th order) is reached for any food item in the current order.
+3. If multiple food items reach milestones in a single order, all of them will be included in the reward notification.
+
+To implement these changes:
+
+1. Replace the entire content of your RewardManagement.jsx file with the updated code provided in the artifact.
+2. Make sure you've already created the `customer_food_counts` table and the `update_food_count_and_check_milestone` function in your Supabase database as described in the previous response.
+
+With these modifications, your Reward Management system should now correctly track and display milestones for each food item ordered by a customer, showing the reward dialog only when new milestones are reached.
+
+
+
+, based on the provided requirement and solution can you provide the answers

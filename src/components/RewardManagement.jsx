@@ -3,7 +3,7 @@ import { supabase } from '../supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -194,7 +194,11 @@ const RewardManagement = () => {
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    const { data: customerData, error: customerError } = await supabase.from('customers').select('id').eq('customer_code', customerId).single();
+    const { data: customerData, error: customerError } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('customer_code', customerId)
+      .single();
 
     if (customerError || !customerData) {
       showToast('Customer ID not found', 'error');
@@ -203,38 +207,35 @@ const RewardManagement = () => {
     }
 
     const customerID = customerData.id;
-
     const filteredFoodItems = foodItems.filter(item => item.code && item.name);
     const itemsReachingMilestone = [];
 
     for (const item of filteredFoodItems) {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('quantity')
-        .eq('customer_id', customerID)
-        .eq('food_item', item.name);
+      // Update the order count and check for milestone
+      const { data, error } = await supabase.rpc('update_food_count_and_check_milestone', {
+        p_customer_id: customerID,
+        p_food_item: item.name,
+        p_quantity: parseInt(item.quantity)
+      });
 
       if (error) {
-        console.log('Error checking order history:', error);
+        console.log('Error updating food count:', error);
         continue;
       }
 
-      const totalQuantity = data.reduce((sum, order) => sum + order.quantity, 0) + item.quantity;
-      const previousTotalQuantity = totalQuantity - item.quantity;
-
-      // Check if the new total quantity crosses a milestone (10, 20, 30, etc.)
-      if (Math.floor(totalQuantity / 10) > Math.floor(previousTotalQuantity / 10)) {
+      if (data && data.length > 0 && data[0].milestone_reached) {
         itemsReachingMilestone.push({
           name: item.name,
-          milestone: Math.floor(totalQuantity / 10) * 10
+          milestone: data[0].new_milestone
         });
       }
 
+      // Insert the new order
       const { error: insertError } = await supabase.from('orders').insert({
         customer_id: customerID,
         food_item: item.name,
         food_code: item.code,
-        quantity: item.quantity
+        quantity: parseInt(item.quantity)
       });
 
       if (insertError) {
@@ -246,10 +247,10 @@ const RewardManagement = () => {
     showToast('Orders submitted successfully', 'success');
 
     if (itemsReachingMilestone.length > 0) {
-      const foodItemsList = itemsReachingMilestone.map(item => 
+      const milestoneMessages = itemsReachingMilestone.map(item => 
         `<span class="text-blue-600 font-semibold">${item.name}</span> (${item.milestone}th order)`
       ).join(', ');
-      setRepeatOrderMessage(`Great news! <strong class="text-green-600">${customerName}</strong> has reached a milestone with the following items: ${foodItemsList}`);
+      setRepeatOrderMessage(`Great news! <strong class="text-green-600">${customerName}</strong> has reached a milestone for: ${milestoneMessages}`);
       setRepeatOrderDialogOpen(true);
     }
 
